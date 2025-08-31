@@ -36,3 +36,7 @@ services:
       - ./frontend:/app
     depends_on:
       - backend
+
+# データの永続化設定
+volumes:
+  postgres-data:
