@@ -1,0 +1,5 @@
+# 環境変数ファイル
+.env
+
+# .env.example だけは例外的に無視しない
+!.env.example
