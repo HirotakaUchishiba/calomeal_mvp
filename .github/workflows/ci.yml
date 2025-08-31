@@ -1,0 +1,42 @@
+# .github/workflows/ci.yml
+
+name: CI
+
+# ワークフローが実行されるタイミングを定義
+on:
+  pull_request:
+    [cite_start]branches: [ develop ] # developブランチへのプルリクエスト時に実行 [cite: 113]
+
+# 実行されるジョブを定義
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. リポジトリのコードをチェックアウト [cite: 115]
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Go言語の環境をセットアップ [cite: 116]
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      # 3. バックエンドのテストを実行 
+      - name: Run backend tests
+        run: go test ./...
+        working-directory: ./backend
+
+      # 4. Node.jsの環境をセットアップ [cite: 118]
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # 5. フロントエンドの依存関係をインストールしてテストを実行 
+      - name: Run frontend tests
+        run: |
+          npm install
+          npm run lint
+          npm run test
+        working-directory: ./frontend
