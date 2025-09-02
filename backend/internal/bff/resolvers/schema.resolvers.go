@@ -6,14 +6,27 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend"
 )
 
 // CompleteOnboarding is the resolver for the completeOnboarding field.
 func (r *mutationResolver) CompleteOnboarding(ctx context.Context, profile backend.UserProfileInput, goal backend.UserGoalInput) (*backend.User, error) {
-	panic(fmt.Errorf("not implemented: CompleteOnboarding - completeOnboarding"))
+	// ステップ2で接続したUserServiceのメソッドを呼び出す
+	err := r.Resolver.UserService.CompleteOnboarding(ctx)
+	if err != nil {
+		// TODO: エラーハンドリングを実装
+		return nil, err
+	}
+
+	// 現時点ではダミーのユーザー情報を返す
+	// 今後のステップで、データベースに保存された実際のユーザー情報を返すように変更します
+	dummyUser := &backend.User{
+		ID:    "dummy-user-id",
+		Email: "dummy@example.com",
+	}
+
+	return dummyUser, nil
 }
 
 // Mutation returns backend.MutationResolver implementation.
