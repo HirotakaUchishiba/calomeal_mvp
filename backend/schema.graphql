@@ -1,0 +1,31 @@
+# backend/schema.graphql
+
+# ... (type Query や他の定義)
+
+# @auth ディレクティブの定義（この行を追加）
+directive @auth on FIELD_DEFINITION
+
+type Mutation {
+    "ユーザーの初回プロフィールと目標を設定します"
+    completeOnboarding(profile: UserProfileInput!, goal: UserGoalInput!): User! @auth
+}
+
+type User {
+    id: ID!
+    email: String!
+}
+
+"プロフィール設定用の入力型"
+input UserProfileInput {
+    height: Float!
+    weight: Float!
+    activityLevel: String!
+}
+
+"目標設定用の入力型"
+input UserGoalInput {
+    targetWeight: Float!
+    targetDate: String!
+}
+
+# ... (他の型定義)

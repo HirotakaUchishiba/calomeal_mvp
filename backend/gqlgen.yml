@@ -1,0 +1,24 @@
+# backend/gqlgen.yml
+
+schema:
+  - schema.graphql
+
+# gqlgenがコードを生成する際の出力先を指定
+exec:
+  filename: generated.go
+  package: backend
+
+# Goのモデル（構造体）の出力先を指定
+model:
+  filename: models_gen.go
+  package: backend
+
+# リゾルバの実装ファイルの出力先を指定
+resolver:
+  layout: follow-schema
+  dir: internal/bff/resolvers
+  package: resolvers
+
+# ディレクティブとGoの関数を自動で紐付ける設定
+autobind:
+  - "github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/bff/middleware"
