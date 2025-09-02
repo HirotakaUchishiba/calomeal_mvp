@@ -1,4 +1,16 @@
 import React, { useState } from 'react';
+import { gql } from '@apollo/client';
+import { useMutation } from '@apollo/client/react';
+
+// バックエンドのschema.graphqlで定義したミューテーションを記述します
+const COMPLETE_ONBOARDING_MUTATION = gql`
+  mutation CompleteOnboarding($profile: UserProfileInput!, $goal: UserGoalInput!) {
+    completeOnboarding(profile: $profile, goal: $goal) {
+      id
+      email
+    }
+  }
+`;
 
 export const OnboardingPage = () => {
   // プロフィール情報の状態
@@ -10,9 +22,12 @@ export const OnboardingPage = () => {
   const [targetWeight, setTargetWeight] = useState('');
   const [targetDate, setTargetDate] = useState('');
 
+  // useMutationフックを呼び出し、API通信用の関数や状態を取得します
+  const [completeOnboarding, { loading, error }] = useMutation(COMPLETE_ONBOARDING_MUTATION);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: タスク5でAPI連携ロジックを実装します
+    
     const profileInput = {
       height: parseFloat(height),
       weight: parseFloat(weight),
@@ -22,7 +37,19 @@ export const OnboardingPage = () => {
       targetWeight: parseFloat(targetWeight),
       targetDate,
     };
-    console.log('Onboarding Submitted:', { profileInput, goalInput });
+
+    // フォームの入力値をバックエンドAPIに送信します
+    completeOnboarding({
+      variables: {
+        profile: profileInput,
+        goal: goalInput,
+      }
+    }).then((response: any) => {
+      console.log('Onboarding Succeeded:', response.data);
+      // TODO: 成功したらダッシュボードへリダイレクトする処理を後で実装します
+    }).catch((err: any) => {
+      console.error('Onboarding Failed:', err);
+    });
   };
 
   return (
@@ -85,7 +112,11 @@ export const OnboardingPage = () => {
           />
         </div>
 
-        <button type="submit">はじめる</button>
+        <button type="submit" disabled={loading}>
+          {loading? '送信中...' : 'はじめる'}
+        </button>
+
+        {error && <p style={{ color: 'red' }}>エラーが発生しました: {error.message}</p>}
       </form>
     </div>
   );
