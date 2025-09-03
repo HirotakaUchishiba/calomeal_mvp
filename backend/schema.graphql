@@ -1,31 +1,96 @@
 # backend/schema.graphql
 
-# ... (type Query や他の定義)
-
-# @auth ディレクティブの定義（この行を追加）
 directive @auth on FIELD_DEFINITION
 
+type Query {
+  "キーワードで食品を検索します (内部データベース)"
+  searchFood(query: String!): [Food!]! @auth
+}
+
 type Mutation {
-    "ユーザーの初回プロフィールと目標を設定します"
-    completeOnboarding(profile: UserProfileInput!, goal: UserGoalInput!): User! @auth
+  "ユーザーの初回プロフィールと目標を設定します"
+  completeOnboarding(profile: UserProfileInput!, goal: UserGoalInput!): User! @auth
+
+  "食事を記録します"
+  logFood(input: LogFoodInput!): FoodLog! @auth
+
+  "運動を記録します (消費カロリーは手動入力)"
+  logExercise(input: LogExerciseInput!): ExerciseLog! @auth
 }
 
 type User {
-    id: ID!
-    email: String!
+  id: ID!
+  email: String!
 }
+
+"内部データベースの食品を表す型"
+type Food {
+  id: ID!
+  name: String!
+  brand: String
+  calories: Float!
+  protein: Float!
+  carbohydrate: Float!
+  fat: Float!
+}
+
+"食事記録を表す型"
+type FoodLog {
+  id: ID!
+  foodName: String!
+  quantity: Float!
+  unit: String!
+  calories: Float!
+  protein: Float!
+  carbohydrate: Float!
+  fat: Float!
+  loggedAt: String!
+}
+
+"運動記録を表す型"
+type ExerciseLog {
+  id: ID!
+  exerciseName: String!
+  durationMinutes: Int!
+  caloriesBurned: Float!
+  loggedAt: String!
+}
+
+# --- 入力型 ---
 
 "プロフィール設定用の入力型"
 input UserProfileInput {
-    height: Float!
-    weight: Float!
-    activityLevel: String!
+  height: Float!
+  weight: Float!
+  activityLevel: String!
 }
 
 "目標設定用の入力型"
 input UserGoalInput {
-    targetWeight: Float!
-    targetDate: String!
+  targetWeight: Float!
+  targetDate: String!
 }
 
-# ... (他の型定義)
+"食事記録用の入力型"
+input LogFoodInput {
+  "foodsテーブルのID"
+  foodId: ID!
+  "量"
+  quantity: Float!
+  "単位 (例: g, 個)"
+  unit: String!
+  "記録日"
+  date: String!
+}
+
+"運動記録用の入力型"
+input LogExerciseInput {
+  "ユーザーが入力した運動名"
+  exerciseName: String!
+  "実施時間(分)"
+  durationMinutes: Int!
+  "ユーザーが入力した消費カロリー"
+  caloriesBurned: Float!
+  "実施日"
+  date: String!
+}
