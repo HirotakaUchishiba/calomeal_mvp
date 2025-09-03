@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export const SignUpPage = () => {
   const [email, setEmail] = useState('');
@@ -36,7 +37,9 @@ export const SignUpPage = () => {
         </div>
         <button type="submit">Sign Up</button>
       </form>
-      {/* TODO: ログインページへのリンクを追加 */}
+      <p>
+        すでにアカウントをお持ちですか？ <Link to="/login">ログイン</Link>
+      </p>
     </div>
   );
 };
