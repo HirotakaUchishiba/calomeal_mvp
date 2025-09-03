@@ -16,7 +16,7 @@ type Food struct {
 
 // Serviceは食品データ関連のビジネスロジックのインターフェースです
 type Service interface {
-	SearchFood(ctx context.Context, query string) (Food, error)
+	SearchFood(ctx context.Context, query string) ([]Food, error)
 	// TODO: GetFoodByIDのようなメソッドも後で必要になります
 }
 
@@ -30,7 +30,7 @@ func NewService() Service {
 }
 
 // SearchFoodはキーワードで食品を検索します
-func (s *service) SearchFood(ctx context.Context, query string) (Food, error) {
+func (s *service) SearchFood(ctx context.Context, query string) ([]Food, error) {
 	// 【メンターズノート】
 	// ここで、設計資料で指定されたPostgreSQLの全文検索を実装します。
 	// `to_tsvector`でドキュメントをベクトル化し、`to_tsquery`でクエリをベクトル化し、
@@ -41,9 +41,9 @@ func (s *service) SearchFood(ctx context.Context, query string) (Food, error) {
 	// 現時点ではダミーデータを返します
 	// TODO: 実際のデータベース検索ロジックを実装
 	if query == "ごはん" {
-		return Food{
+		return []Food{{
 			ID: 2, Name: "ごはん", Brand: nil, Calories: 168, Protein: 2.5, Carbohydrate: 37, Fat: 0.3,
-		}, nil
+		}}, nil
 	}
-	return Food{}, nil
+	return []Food{}, nil
 }

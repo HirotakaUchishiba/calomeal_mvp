@@ -6,8 +6,10 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend"
+	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/log"
 )
 
 // CompleteOnboarding is the resolver for the completeOnboarding field.
@@ -20,7 +22,6 @@ func (r *mutationResolver) CompleteOnboarding(ctx context.Context, profile backe
 	}
 
 	// 現時点ではダミーのユーザー情報を返す
-	// 今後のステップで、データベースに保存された実際のユーザー情報を返すように変更します
 	dummyUser := &backend.User{
 		ID:    "dummy-user-id",
 		Email: "dummy@example.com",
@@ -29,7 +30,69 @@ func (r *mutationResolver) CompleteOnboarding(ctx context.Context, profile backe
 	return dummyUser, nil
 }
 
+// LogFood is the resolver for the logFood field.
+func (r *mutationResolver) LogFood(ctx context.Context, input backend.LogFoodInput) (*backend.FoodLog, error) {
+	panic(fmt.Errorf("not implemented: LogFood")) // TODO: LogServiceを呼び出すロジックを実装
+}
+
+// LogExercise is the resolver for the logExercise field.
+func (r *mutationResolver) LogExercise(ctx context.Context, input backend.LogExerciseInput) (*backend.ExerciseLog, error) {
+	// TODO: コンテキストから実際のユーザーIDを取得
+	userID := "dummy-user-id-for-logging"
+
+	// 入力型をサービス層の型に変換
+	serviceInput := log.LogExerciseInput{
+		ExerciseName:    input.ExerciseName,
+		DurationMinutes: input.DurationMinutes,
+		CaloriesBurned:  input.CaloriesBurned,
+		Date:            input.Date,
+	}
+
+	// LogServiceを呼び出す
+	logID, err := r.Resolver.LogService.LogExercise(ctx, userID, serviceInput)
+	if err != nil {
+		return nil, err
+	}
+
+	// 成功レスポンスを返す (ダミーデータ)
+	return &backend.ExerciseLog{
+		ID:              fmt.Sprintf("%d", logID),
+		ExerciseName:    input.ExerciseName,
+		DurationMinutes: input.DurationMinutes,
+		CaloriesBurned:  input.CaloriesBurned,
+		LoggedAt:        input.Date,
+	}, nil
+}
+
+// SearchFood is the resolver for the searchFood field.
+func (r *queryResolver) SearchFood(ctx context.Context, query string) ([]*backend.Food, error) {
+	// FoodDataServiceを呼び出す
+	results, err := r.Resolver.FoodDataService.SearchFood(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	// サービス層の型 (fooddata.Food) からGraphQLの型 (*backend.Food) へ変換
+	foods := make([]*backend.Food, 0, len(results))
+	for _, res := range results {
+		foods = append(foods, &backend.Food{
+			ID:           fmt.Sprintf("%d", res.ID),
+			Name:         res.Name,
+			Brand:        res.Brand,
+			Calories:     res.Calories,
+			Protein:      res.Protein,
+			Carbohydrate: res.Carbohydrate,
+			Fat:          res.Fat,
+		})
+	}
+	return foods, nil
+}
+
 // Mutation returns backend.MutationResolver implementation.
 func (r *Resolver) Mutation() backend.MutationResolver { return &mutationResolver{r} }
 
+// Query returns backend.QueryResolver implementation.
+func (r *Resolver) Query() backend.QueryResolver { return &queryResolver{r} }
+
 type mutationResolver struct{ *Resolver }
+type queryResolver struct{ *Resolver }

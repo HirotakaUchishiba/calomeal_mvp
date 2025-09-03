@@ -2,6 +2,63 @@
 
 package backend
 
+// 運動記録を表す型
+type ExerciseLog struct {
+	ID              string  `json:"id"`
+	ExerciseName    string  `json:"exerciseName"`
+	DurationMinutes int     `json:"durationMinutes"`
+	CaloriesBurned  float64 `json:"caloriesBurned"`
+	LoggedAt        string  `json:"loggedAt"`
+}
+
+// 内部データベースの食品を表す型
+type Food struct {
+	ID           string  `json:"id"`
+	Name         string  `json:"name"`
+	Brand        *string `json:"brand,omitempty"`
+	Calories     float64 `json:"calories"`
+	Protein      float64 `json:"protein"`
+	Carbohydrate float64 `json:"carbohydrate"`
+	Fat          float64 `json:"fat"`
+}
+
+// 食事記録を表す型
+type FoodLog struct {
+	ID           string  `json:"id"`
+	FoodName     string  `json:"foodName"`
+	Quantity     float64 `json:"quantity"`
+	Unit         string  `json:"unit"`
+	Calories     float64 `json:"calories"`
+	Protein      float64 `json:"protein"`
+	Carbohydrate float64 `json:"carbohydrate"`
+	Fat          float64 `json:"fat"`
+	LoggedAt     string  `json:"loggedAt"`
+}
+
+// 運動記録用の入力型
+type LogExerciseInput struct {
+	// ユーザーが入力した運動名
+	ExerciseName string `json:"exerciseName"`
+	// 実施時間(分)
+	DurationMinutes int `json:"durationMinutes"`
+	// ユーザーが入力した消費カロリー
+	CaloriesBurned float64 `json:"caloriesBurned"`
+	// 実施日
+	Date string `json:"date"`
+}
+
+// 食事記録用の入力型
+type LogFoodInput struct {
+	// foodsテーブルのID
+	FoodID string `json:"foodId"`
+	// 量
+	Quantity float64 `json:"quantity"`
+	// 単位 (例: g, 個)
+	Unit string `json:"unit"`
+	// 記録日
+	Date string `json:"date"`
+}
+
 type Mutation struct {
 }
 
