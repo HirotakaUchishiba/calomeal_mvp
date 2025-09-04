@@ -1,24 +1,43 @@
 import React, { useState } from 'react';
+import { gql, useMutation } from '@apollo/client';
+
+const LOG_EXERCISE_MUTATION = gql`
+  mutation LogExercise($input: LogExerciseInput!) {
+    logExercise(input: $input) {
+      id
+    }
+  }
+`;
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  logDate: string; // 記録対象の日付
 };
 
-export const ExerciseLogModal = ({ isOpen, onClose }: Props) => {
+export const ExerciseLogModal = ({ isOpen, onClose, logDate }: Props) => {
   const [exerciseName, setExerciseName] = useState('');
   const [durationMinutes, setDurationMinutes] = useState('');
-  const [caloriesBurned, setCaloriesBurned]= useState('');
+  const [caloriesBurned, setCaloriesBurned] = useState('');
+
+  const [logExercise, { loading, error }] = useMutation(LOG_EXERCISE_MUTATION);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: タスク5でAPI記録ロジックを実装します
-    console.log('Logging exercise:', {
-      exerciseName,
-      durationMinutes: parseInt(durationMinutes),
-      caloriesBurned: parseFloat(caloriesBurned),
+    logExercise({
+      variables: {
+        input: {
+          exerciseName,
+          durationMinutes: parseInt(durationMinutes),
+          caloriesBurned: parseFloat(caloriesBurned),
+          date: logDate,
+        },
+      },
+    }).then(() => {
+      onClose();
+    }).catch(err => {
+      console.error("Failed to log exercise:", err);
     });
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -59,7 +78,10 @@ export const ExerciseLogModal = ({ isOpen, onClose }: Props) => {
               required
             />
           </div>
-          <button type="submit">この運動を記録する</button>
+          <button type="submit" disabled={loading}>
+            {loading? '記録中...' : 'この運動を記録する'}
+          </button>
+          {error && <p style={{ color: 'red' }}>エラー: {error.message}</p>}
         </form>
       </div>
     </div>
