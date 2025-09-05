@@ -90,6 +90,21 @@ func (r *queryResolver) SearchFood(ctx context.Context, query string) ([]*backen
 
 // DailySummary is the resolver for the dailySummary field.
 func (r *queryResolver) DailySummary(ctx context.Context, date string) (*backend.DailySummary, error) {
+    // TODO: 実際のLogServiceに集計ロジックを実装し、それを呼び出す
+    // LogService.GetDailySummary(ctx, userID, date) のような形
+
+    // 現時点ではダミーデータを返す
+    return &backend.DailySummary{
+        CaloriesIntake: 1500,
+        CaloriesBurned: 300,
+        Protein:        80,
+        Carbohydrate:   200,
+        Fat:            50,
+    }, nil
+}
+
+// DailySummary is the resolver for the dailySummary field.
+func (r *queryResolver) DailySummary(ctx context.Context, date string) (*backend.DailySummary, error) {
 	panic(fmt.Errorf("not implemented: DailySummary - dailySummary"))
 }
 
