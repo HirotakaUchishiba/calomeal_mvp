@@ -11,6 +11,7 @@ import (
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/bff/resolvers"
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/fooddata"
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/user"
+	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/bff/middleware"
 	cors "github.com/rs/cors"
 	logsvc "github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/log" 
 )
@@ -30,7 +31,14 @@ func main() {
 		LogService:      logsvc.NewService(),
 	}
 
-	srv := handler.NewDefaultServer(backend.NewExecutableSchema(backend.Config{Resolvers: resolver}))
+	cfg := backend.Config{
+		Resolvers: resolver,
+		Directives: backend.DirectiveRoot{
+		  Auth: middleware.Auth, // ← ディレクティブを紐付け
+		},
+	  }
+
+	srv := handler.NewDefaultServer(backend.NewExecutableSchema(cfg))
 
 	// --- ここからCORSの設定 ---
 	// フロントエンドの開発サーバーである http://localhost:5173 からのアクセスを許可する設定
