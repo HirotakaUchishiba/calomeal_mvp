@@ -2,6 +2,20 @@
 
 package backend
 
+// 一日の栄養サマリーを表す型
+type DailySummary struct {
+	// 総摂取カロリー
+	CaloriesIntake float64 `json:"caloriesIntake"`
+	// 総消費カロリー
+	CaloriesBurned float64 `json:"caloriesBurned"`
+	// タンパク質摂取量
+	Protein float64 `json:"protein"`
+	// 炭水化物摂取量
+	Carbohydrate float64 `json:"carbohydrate"`
+	// 脂質摂取量
+	Fat float64 `json:"fat"`
+}
+
 // 運動記録を表す型
 type ExerciseLog struct {
 	ID              string  `json:"id"`

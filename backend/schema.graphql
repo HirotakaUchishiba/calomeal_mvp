@@ -5,6 +5,9 @@ directive @auth on FIELD_DEFINITION
 type Query {
   "キーワードで食品を検索します (内部データベース)"
   searchFood(query: String!): [Food!]! @auth
+
+  "指定された日付のユーザーの日次サマリーを取得します"
+  dailySummary(date: String!): DailySummary! @auth
 }
 
 type Mutation {
@@ -93,4 +96,19 @@ input LogExerciseInput {
   caloriesBurned: Float!
   "実施日"
   date: String!
+}
+
+"一日の栄養サマリーを表す型"
+type DailySummary {
+  "総摂取カロリー"
+  caloriesIntake: Float!
+  "総消費カロリー"
+  caloriesBurned: Float!
+  "タンパク質摂取量"
+  protein: Float!
+  "炭水化物摂取量"
+  carbohydrate: Float!
+  "脂質摂取量"
+  fat: Float!
+  # TODO: 目標値も後で追加する
 }

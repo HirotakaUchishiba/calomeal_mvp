@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { GET_DAILY_SUMMARY_QUERY } from '../../graphql/queries';
 import { gql, useMutation } from '@apollo/client';
 
 const LOG_EXERCISE_MUTATION = gql`
@@ -20,7 +21,9 @@ export const ExerciseLogModal = ({ isOpen, onClose, logDate }: Props) => {
   const [durationMinutes, setDurationMinutes] = useState('');
   const [caloriesBurned, setCaloriesBurned] = useState('');
 
-  const [logExercise, { loading, error }] = useMutation(LOG_EXERCISE_MUTATION);
+  const [logExercise, { loading, error }] = useMutation(LOG_EXERCISE_MUTATION, {
+    refetchQueries:[GET_DAILY_SUMMARY_QUERY],
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
