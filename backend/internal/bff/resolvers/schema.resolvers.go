@@ -88,6 +88,11 @@ func (r *queryResolver) SearchFood(ctx context.Context, query string) ([]*backen
 	return foods, nil
 }
 
+// DailySummary is the resolver for the dailySummary field.
+func (r *queryResolver) DailySummary(ctx context.Context, date string) (*backend.DailySummary, error) {
+	panic(fmt.Errorf("not implemented: DailySummary - dailySummary"))
+}
+
 // Mutation returns backend.MutationResolver implementation.
 func (r *Resolver) Mutation() backend.MutationResolver { return &mutationResolver{r} }
 

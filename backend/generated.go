@@ -47,6 +47,14 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	DailySummary struct {
+		CaloriesBurned func(childComplexity int) int
+		CaloriesIntake func(childComplexity int) int
+		Carbohydrate   func(childComplexity int) int
+		Fat            func(childComplexity int) int
+		Protein        func(childComplexity int) int
+	}
+
 	ExerciseLog struct {
 		CaloriesBurned  func(childComplexity int) int
 		DurationMinutes func(childComplexity int) int
@@ -84,7 +92,8 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		SearchFood func(childComplexity int, query string) int
+		DailySummary func(childComplexity int, date string) int
+		SearchFood   func(childComplexity int, query string) int
 	}
 
 	User struct {
@@ -100,6 +109,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	SearchFood(ctx context.Context, query string) ([]*Food, error)
+	DailySummary(ctx context.Context, date string) (*DailySummary, error)
 }
 
 type executableSchema struct {
@@ -120,6 +130,41 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "DailySummary.caloriesBurned":
+		if e.complexity.DailySummary.CaloriesBurned == nil {
+			break
+		}
+
+		return e.complexity.DailySummary.CaloriesBurned(childComplexity), true
+
+	case "DailySummary.caloriesIntake":
+		if e.complexity.DailySummary.CaloriesIntake == nil {
+			break
+		}
+
+		return e.complexity.DailySummary.CaloriesIntake(childComplexity), true
+
+	case "DailySummary.carbohydrate":
+		if e.complexity.DailySummary.Carbohydrate == nil {
+			break
+		}
+
+		return e.complexity.DailySummary.Carbohydrate(childComplexity), true
+
+	case "DailySummary.fat":
+		if e.complexity.DailySummary.Fat == nil {
+			break
+		}
+
+		return e.complexity.DailySummary.Fat(childComplexity), true
+
+	case "DailySummary.protein":
+		if e.complexity.DailySummary.Protein == nil {
+			break
+		}
+
+		return e.complexity.DailySummary.Protein(childComplexity), true
 
 	case "ExerciseLog.caloriesBurned":
 		if e.complexity.ExerciseLog.CaloriesBurned == nil {
@@ -303,6 +348,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.LogFood(childComplexity, args["input"].(LogFoodInput)), true
+
+	case "Query.dailySummary":
+		if e.complexity.Query.DailySummary == nil {
+			break
+		}
+
+		args, err := ec.field_Query_dailySummary_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.DailySummary(childComplexity, args["date"].(string)), true
 
 	case "Query.searchFood":
 		if e.complexity.Query.SearchFood == nil {
@@ -507,6 +564,17 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_dailySummary_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "date", ec.unmarshalNString2string)
+	if err != nil {
+		return nil, err
+	}
+	args["date"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_searchFood_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -569,6 +637,226 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _DailySummary_caloriesIntake(ctx context.Context, field graphql.CollectedField, obj *DailySummary) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DailySummary_caloriesIntake(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CaloriesIntake, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DailySummary_caloriesIntake(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DailySummary",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DailySummary_caloriesBurned(ctx context.Context, field graphql.CollectedField, obj *DailySummary) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DailySummary_caloriesBurned(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CaloriesBurned, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DailySummary_caloriesBurned(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DailySummary",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DailySummary_protein(ctx context.Context, field graphql.CollectedField, obj *DailySummary) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DailySummary_protein(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Protein, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DailySummary_protein(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DailySummary",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DailySummary_carbohydrate(ctx context.Context, field graphql.CollectedField, obj *DailySummary) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DailySummary_carbohydrate(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Carbohydrate, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DailySummary_carbohydrate(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DailySummary",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DailySummary_fat(ctx context.Context, field graphql.CollectedField, obj *DailySummary) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DailySummary_fat(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Fat, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DailySummary_fat(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DailySummary",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _ExerciseLog_id(ctx context.Context, field graphql.CollectedField, obj *ExerciseLog) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ExerciseLog_id(ctx, field)
@@ -1847,6 +2135,95 @@ func (ec *executionContext) fieldContext_Query_searchFood(ctx context.Context, f
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_searchFood_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_dailySummary(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_dailySummary(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().DailySummary(rctx, fc.Args["date"].(string))
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			if ec.directives.Auth == nil {
+				var zeroVal *DailySummary
+				return zeroVal, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*DailySummary); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/HirotakaUchishiba/calomeal_mvp/backend.DailySummary`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*DailySummary)
+	fc.Result = res
+	return ec.marshalNDailySummary2ᚖgithubᚗcomᚋHirotakaUchishibaᚋcalomeal_mvpᚋbackendᚐDailySummary(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_dailySummary(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "caloriesIntake":
+				return ec.fieldContext_DailySummary_caloriesIntake(ctx, field)
+			case "caloriesBurned":
+				return ec.fieldContext_DailySummary_caloriesBurned(ctx, field)
+			case "protein":
+				return ec.fieldContext_DailySummary_protein(ctx, field)
+			case "carbohydrate":
+				return ec.fieldContext_DailySummary_carbohydrate(ctx, field)
+			case "fat":
+				return ec.fieldContext_DailySummary_fat(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DailySummary", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_dailySummary_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -4202,6 +4579,65 @@ func (ec *executionContext) unmarshalInputUserProfileInput(ctx context.Context, 
 
 // region    **************************** object.gotpl ****************************
 
+var dailySummaryImplementors = []string{"DailySummary"}
+
+func (ec *executionContext) _DailySummary(ctx context.Context, sel ast.SelectionSet, obj *DailySummary) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, dailySummaryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DailySummary")
+		case "caloriesIntake":
+			out.Values[i] = ec._DailySummary_caloriesIntake(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "caloriesBurned":
+			out.Values[i] = ec._DailySummary_caloriesBurned(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "protein":
+			out.Values[i] = ec._DailySummary_protein(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "carbohydrate":
+			out.Values[i] = ec._DailySummary_carbohydrate(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "fat":
+			out.Values[i] = ec._DailySummary_fat(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var exerciseLogImplementors = []string{"ExerciseLog"}
 
 func (ec *executionContext) _ExerciseLog(ctx context.Context, sel ast.SelectionSet, obj *ExerciseLog) graphql.Marshaler {
@@ -4498,6 +4934,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_searchFood(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "dailySummary":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_dailySummary(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -4934,6 +5392,20 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNDailySummary2githubᚗcomᚋHirotakaUchishibaᚋcalomeal_mvpᚋbackendᚐDailySummary(ctx context.Context, sel ast.SelectionSet, v DailySummary) graphql.Marshaler {
+	return ec._DailySummary(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDailySummary2ᚖgithubᚗcomᚋHirotakaUchishibaᚋcalomeal_mvpᚋbackendᚐDailySummary(ctx context.Context, sel ast.SelectionSet, v *DailySummary) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._DailySummary(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNExerciseLog2githubᚗcomᚋHirotakaUchishibaᚋcalomeal_mvpᚋbackendᚐExerciseLog(ctx context.Context, sel ast.SelectionSet, v ExerciseLog) graphql.Marshaler {
