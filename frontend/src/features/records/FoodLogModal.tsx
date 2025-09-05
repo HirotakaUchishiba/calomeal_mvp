@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { GET_DAILY_SUMMARY_QUERY } from '../../graphql/queries';
 import { gql, useLazyQuery, useMutation } from '@apollo/client';
 
 // バックエンドのスキーマに対応するGraphQLクエリとミューテーションを定義
@@ -49,7 +50,10 @@ export const FoodLogModal = ({ isOpen, onClose, logDate }: Props) => {
   );
 
   // useMutationフックで、食事記録用のミューテーション関数を取得
-  const [logFood, { loading: logLoading, error: logError }] = useMutation(LOG_FOOD_MUTATION);
+  const [logFood, { loading: logLoading, error: logError }] = useMutation(LOG_FOOD_MUTATION, {
+    refetchQueries: [GET_DAILY_SUMMARY_QUERY], 
+  });
+
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
