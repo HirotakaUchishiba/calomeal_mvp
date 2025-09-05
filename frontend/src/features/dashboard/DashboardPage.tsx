@@ -1,28 +1,18 @@
 import React, { useState } from 'react';
+import { useQuery } from '@apollo/client';
 import { FoodLogModal } from '../records/FoodLogModal';
 import { ExerciseLogModal } from '../records/ExerciseLogModal';
 import { DailySummaryNumbers } from '../../components/DailySummaryNumbers';
 import { PFCProgressBars } from '../../components/PFCProgressBars';
-import { useQuery, gql } from '@apollo/client';
-
-const GET_DAILY_SUMMARY_QUERY = gql`
-  query GetDailySummary($date: String!) {
-    dailySummary(date: $date) {
-      caloriesIntake
-      caloriesBurned
-      protein
-      carbohydrate
-      fat
-    }
-  }
-`;
+import { GET_DAILY_SUMMARY_QUERY } from '../../graphql/queries'; 
 
 export const DashboardPage = () => {
   const [isFoodModalOpen, setFoodModalOpen] = useState(false);
   const [isExerciseModalOpen, setExerciseModalOpen] = useState(false);
   const today = new Date().toISOString().split('T')[0];
+
   const { data, loading, error } = useQuery(GET_DAILY_SUMMARY_QUERY, {
-    variables: { date: today },
+    variables: { date: today }
   });
 
   if (loading) return <p>読み込み中...</p>;
