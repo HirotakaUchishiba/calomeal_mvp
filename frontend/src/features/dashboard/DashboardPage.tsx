@@ -3,28 +3,38 @@ import { FoodLogModal } from '../records/FoodLogModal';
 import { ExerciseLogModal } from '../records/ExerciseLogModal';
 import { DailySummaryNumbers } from '../../components/DailySummaryNumbers';
 import { PFCProgressBars } from '../../components/PFCProgressBars';
+import { useQuery, gql } from '@apollo/client';
+
+const GET_DAILY_SUMMARY_QUERY = gql`
+  query GetDailySummary($date: String!) {
+    dailySummary(date: $date) {
+      caloriesIntake
+      caloriesBurned
+      protein
+      carbohydrate
+      fat
+    }
+  }
+`;
 
 export const DashboardPage = () => {
   const [isFoodModalOpen, setFoodModalOpen] = useState(false);
   const [isExerciseModalOpen, setExerciseModalOpen] = useState(false);
   const today = new Date().toISOString().split('T')[0];
+  const { data, loading, error } = useQuery(GET_DAILY_SUMMARY_QUERY, {
+    variables: { date: today },
+  });
 
-  // TODO: タスク4でAPIから実際のデータを取得する
-  const dummySummary = {
-    caloriesIntake: 1500,
-    caloriesBurned: 300,
-    protein: 80,
-    carbohydrate: 200,
-    fat: 50,
-  };
+  if (loading) return <p>読み込み中...</p>;
+  if (error) return <p>エラーが発生しました: {error.message}</p>;
 
   return (
     <div>
       <h1>ダッシュボード</h1>
 
       {/* サマリー表示エリア */}
-      <DailySummaryNumbers summary={dummySummary} />
-      <PFCProgressBars summary={dummySummary} />
+      <DailySummaryNumbers summary={data.dailySummary} />
+      <PFCProgressBars summary={data.dailySummary} />
 
       {/* 記録ボタン */}
       <div className="fab-container">
