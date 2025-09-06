@@ -32,7 +32,53 @@ func (r *mutationResolver) CompleteOnboarding(ctx context.Context, profile backe
 
 // LogFood is the resolver for the logFood field.
 func (r *mutationResolver) LogFood(ctx context.Context, input backend.LogFoodInput) (*backend.FoodLog, error) {
-	panic(fmt.Errorf("not implemented: LogFood")) // TODO: LogServiceを呼び出すロジックを実装
+	// TODO: コンテキストから実際のユーザーIDを取得
+	userID := "dummy-user-id-for-logging"
+
+	// foodIdから食品情報を取得（TODO: 実際の食品データベースから取得）
+	// 現時点ではダミーデータを使用
+	foodName := "選択された食品"
+	caloriesPerUnit := 100.0
+	proteinPerUnit := 10.0
+	carbohydratePerUnit := 20.0
+	fatPerUnit := 5.0
+
+	// 栄養素を計算（量 × 単位あたりの栄養素）
+	calories := input.Quantity * caloriesPerUnit
+	protein := input.Quantity * proteinPerUnit
+	carbohydrate := input.Quantity * carbohydratePerUnit
+	fat := input.Quantity * fatPerUnit
+
+	// 入力型をサービス層の型に変換
+	serviceInput := log.LogFoodInput{
+		FoodName:     foodName,
+		Quantity:     input.Quantity,
+		Unit:         input.Unit,
+		Calories:     calories,
+		Protein:      protein,
+		Carbohydrate: carbohydrate,
+		Fat:          fat,
+		Date:         input.Date,
+	}
+
+	// LogServiceを呼び出す
+	logID, err := r.Resolver.LogService.LogFood(ctx, userID, serviceInput)
+	if err != nil {
+		return nil, err
+	}
+
+	// 成功レスポンスを返す
+	return &backend.FoodLog{
+		ID:           fmt.Sprintf("%d", logID),
+		FoodName:     foodName,
+		Quantity:     input.Quantity,
+		Unit:         input.Unit,
+		Calories:     calories,
+		Protein:      protein,
+		Carbohydrate: carbohydrate,
+		Fat:          fat,
+		LoggedAt:     input.Date,
+	}, nil
 }
 
 // LogExercise is the resolver for the logExercise field.
@@ -90,16 +136,22 @@ func (r *queryResolver) SearchFood(ctx context.Context, query string) ([]*backen
 
 // DailySummary is the resolver for the dailySummary field.
 func (r *queryResolver) DailySummary(ctx context.Context, date string) (*backend.DailySummary, error) {
-    // TODO: 実際のLogServiceに集計ロジックを実装し、それを呼び出す
-    // LogService.GetDailySummary(ctx, userID, date) のような形
+    // TODO: コンテキストから実際のユーザーIDを取得
+    userID := "dummy-user-id-for-logging"
 
-    // 現時点ではダミーデータを返す
+    // LogServiceから日次サマリーを取得
+    summary, err := r.Resolver.LogService.GetDailySummary(ctx, userID, date)
+    if err != nil {
+        return nil, err
+    }
+
+    // サービス層の型からGraphQLの型に変換
     return &backend.DailySummary{
-        CaloriesIntake: 1500,
-        CaloriesBurned: 300,
-        Protein:        80,
-        Carbohydrate:   200,
-        Fat:            50,
+        CaloriesIntake: summary.CaloriesIntake,
+        CaloriesBurned: summary.CaloriesBurned,
+        Protein:        summary.Protein,
+        Carbohydrate:   summary.Carbohydrate,
+        Fat:            summary.Fat,
     }, nil
 }
 
