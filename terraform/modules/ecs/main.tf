@@ -135,8 +135,6 @@ resource "aws_iam_policy" "secrets_manager_read_policy" {
     Resource = "arn:aws:secretsmanager:*:*:secret:${var.project_name}-${var.environment}-db-credentials-*"
   }
 ]
-      },
-    ]
   })
 }
 
@@ -153,7 +151,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_role_secrets_manager_policy"
 resource "aws_ecs_task_definition" "this" {
   family                   = "${var.project_name}-${var.environment}-task"
   network_mode             = "awsvpc"
-  requires_compatibilities =
+  requires_compatibilities = ["FARGATE"]
   cpu                      = "256"  # 0.25 vCPU
   memory                   = "512"  # 512 MiB
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
@@ -174,7 +172,12 @@ resource "aws_ecs_task_definition" "this" {
       ]
       # 設計資料の指示通り、AWS Secrets ManagerからDB認証情報を安全に注入する。
       # これにより、機密情報がコードやコンテナイメージにハードコードされるのを防ぐ。
-      secrets =
+      secrets = [
+  {
+    name      = "DATABASE_URL"
+    valueFrom = "arn:aws:secretsmanager:ap-northeast-1:${data.aws_caller_identity.current.account_id}:secret:${var.project_name}-${var.environment}-db-credentials"
+  }
+]
       # 構造化JSON形式でログをCloudWatch Logsに出力
       logConfiguration = {
         logDriver = "awslogs"
