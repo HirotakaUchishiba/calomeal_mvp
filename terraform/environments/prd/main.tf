@@ -4,6 +4,9 @@ provider "aws" {
   region = "ap-northeast-1" # 東京リージョン
 }
 
+# 現在のAWSアカウント情報を取得
+data "aws_caller_identity" "current" {}
+
 # --- VPCモジュールの呼び出し ---
 module "vpc" {
   source = "../../modules/vpc"
@@ -36,9 +39,10 @@ module "ecs" {
   source = "../../modules/ecs"
 
   project_name              = "calomeal-prd"
+  environment               = "prd"
   vpc_id                    = module.vpc.vpc_id
-  public_subnet_ids         = module.vpc.public_subnet_ids
   private_subnet_ids        = module.vpc.private_subnet_ids
-  ecs_task_execution_role_arn = module.iam.ecs_task_execution_role_arn
   container_image           = "your-aws-account-id.dkr.ecr.ap-northeast-1.amazonaws.com/calomeal:latest" # 仮
+  db_secret_arn            = "arn:aws:secretsmanager:ap-northeast-1:${data.aws_caller_identity.current.account_id}:secret:calomeal-prd-db-credentials"
+  alb_target_group_arn     = "arn:aws:elasticloadbalancing:ap-northeast-1:${data.aws_caller_identity.current.account_id}:targetgroup/calomeal-prd-tg"
 }
