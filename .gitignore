@@ -2,4 +2,4 @@
 .env
 
 # .env.example だけは例外的に無視しない
-!.env.example
+!.env.example.terraform/
