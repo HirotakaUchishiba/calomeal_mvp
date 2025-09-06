@@ -126,7 +126,15 @@ resource "aws_iam_policy" "secrets_manager_read_policy" {
 
   policy = jsonencode({
     Version   = "2012-10-17"
-    Statement =
+    Statement = [
+  {
+    Effect = "Allow"
+    Action = [
+      "secretsmanager:GetSecretValue"
+    ]
+    Resource = "arn:aws:secretsmanager:*:*:secret:${var.project_name}-${var.environment}-db-credentials-*"
+  }
+]
       },
     ]
   })
