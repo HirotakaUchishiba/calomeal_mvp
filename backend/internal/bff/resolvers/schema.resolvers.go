@@ -33,7 +33,7 @@ func (r *mutationResolver) CompleteOnboarding(ctx context.Context, profile backe
 // LogFood is the resolver for the logFood field.
 func (r *mutationResolver) LogFood(ctx context.Context, input backend.LogFoodInput) (*backend.FoodLog, error) {
 	// TODO: コンテキストから実際のユーザーIDを取得
-	userID := "dummy-user-id-for-logging"
+	userID := "550e8400-e29b-41d4-a716-446655440000" // 有効なUUID形式のダミー値
 
 	// foodIdから食品情報を取得（TODO: 実際の食品データベースから取得）
 	// 現時点ではダミーデータを使用
@@ -84,7 +84,7 @@ func (r *mutationResolver) LogFood(ctx context.Context, input backend.LogFoodInp
 // LogExercise is the resolver for the logExercise field.
 func (r *mutationResolver) LogExercise(ctx context.Context, input backend.LogExerciseInput) (*backend.ExerciseLog, error) {
 	// TODO: コンテキストから実際のユーザーIDを取得
-	userID := "dummy-user-id-for-logging"
+	userID := "550e8400-e29b-41d4-a716-446655440000" // 有効なUUID形式のダミー値
 
 	// 入力型をサービス層の型に変換
 	serviceInput := log.LogExerciseInput{
@@ -137,7 +137,7 @@ func (r *queryResolver) SearchFood(ctx context.Context, query string) ([]*backen
 // DailySummary is the resolver for the dailySummary field.
 func (r *queryResolver) DailySummary(ctx context.Context, date string) (*backend.DailySummary, error) {
     // TODO: コンテキストから実際のユーザーIDを取得
-    userID := "dummy-user-id-for-logging"
+    userID := "550e8400-e29b-41d4-a716-446655440000"
 
     // LogServiceから日次サマリーを取得
     summary, err := r.Resolver.LogService.GetDailySummary(ctx, userID, date)
