@@ -1,10 +1,12 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	"os"
 
+	_ "github.com/lib/pq"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend"
@@ -18,17 +20,46 @@ import (
 
 const defaultPort = "8080"
 
+// getDSN returns database connection string from environment variables
+func getDSN() string {
+	host := getenv("DB_HOST", "db")
+	port := getenv("DB_PORT", "5432")
+	user := getenv("POSTGRES_USER", "postgres")
+	pass := getenv("POSTGRES_PASSWORD", "postgres")
+	name := getenv("POSTGRES_DB", "calomeal")
+	ssl := getenv("DB_SSLMODE", "disable")
+	return "host=" + host + " port=" + port + " user=" + user + " password=" + pass + " dbname=" + name + " sslmode=" + ssl
+}
+
+func getenv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
 	}
 
+	// DB接続
+	db, err := sql.Open("postgres", getDSN())
+	if err != nil {
+		log.Fatal("Failed to connect to database:", err)
+	}
+	defer db.Close()
+
+	if err := db.Ping(); err != nil {
+		log.Fatal("Failed to ping database:", err)
+	}
+
 	// リゾルバのインスタンスを作成し、各サービスを注入（依存性の注入）
 	resolver := &resolvers.Resolver{
 		UserService:     user.NewService(),
 		FoodDataService: fooddata.NewService(),
-		LogService:      logsvc.NewService(),
+		LogService:      logsvc.NewService(db),
 	}
 
 	cfg := backend.Config{
