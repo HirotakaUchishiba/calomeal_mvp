@@ -57,7 +57,7 @@ func main() {
 
 	// リゾルバのインスタンスを作成し、各サービスを注入（依存性の注入）
 	resolver := &resolvers.Resolver{
-		UserService:     user.NewService(),
+		UserService:     user.NewService(db),
 		FoodDataService: fooddata.NewService(db),
 		LogService:      logsvc.NewService(db),
 	}

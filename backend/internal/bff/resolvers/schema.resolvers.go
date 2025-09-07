@@ -10,24 +10,35 @@ import (
 
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend"
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/log"
+	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/user"
 )
 
 // CompleteOnboarding is the resolver for the completeOnboarding field.
 func (r *mutationResolver) CompleteOnboarding(ctx context.Context, profile backend.UserProfileInput, goal backend.UserGoalInput) (*backend.User, error) {
-	// ステップ2で接続したUserServiceのメソッドを呼び出す
-	err := r.Resolver.UserService.CompleteOnboarding(ctx)
+	// TODO: コンテキストから実際のユーザーIDを取得（認証実装後に修正）
+	userID := "550e8400-e29b-41d4-a716-446655440000" // 有効なUUID形式のダミー値
+
+	// UserServiceの新しいインターフェースを使用
+	userProfile := user.UserProfileInput{
+		Height:        profile.Height,
+		Weight:        profile.Weight,
+		ActivityLevel: profile.ActivityLevel,
+	}
+	userGoal := user.UserGoalInput{
+		TargetWeight: goal.TargetWeight,
+		TargetDate:   goal.TargetDate,
+	}
+
+	err := r.Resolver.UserService.CompleteOnboarding(ctx, userID, userProfile, userGoal)
 	if err != nil {
-		// TODO: エラーハンドリングを実装
-		return nil, err
+		return nil, fmt.Errorf("failed to complete onboarding: %w", err)
 	}
 
-	// 現時点ではダミーのユーザー情報を返す
-	dummyUser := &backend.User{
-		ID:    "dummy-user-id",
-		Email: "dummy@example.com",
-	}
-
-	return dummyUser, nil
+	// 成功レスポンスを返す
+	return &backend.User{
+		ID:    userID,
+		Email: "user@example.com", // TODO: 実際のユーザー情報を取得
+	}, nil
 }
 
 // LogFood is the resolver for the logFood field.
@@ -136,23 +147,23 @@ func (r *queryResolver) SearchFood(ctx context.Context, query string) ([]*backen
 
 // DailySummary is the resolver for the dailySummary field.
 func (r *queryResolver) DailySummary(ctx context.Context, date string) (*backend.DailySummary, error) {
-    // TODO: コンテキストから実際のユーザーIDを取得
-    userID := "550e8400-e29b-41d4-a716-446655440000"
+	// TODO: コンテキストから実際のユーザーIDを取得
+	userID := "550e8400-e29b-41d4-a716-446655440000"
 
-    // LogServiceから日次サマリーを取得
-    summary, err := r.Resolver.LogService.GetDailySummary(ctx, userID, date)
-    if err != nil {
-        return nil, err
-    }
+	// LogServiceから日次サマリーを取得
+	summary, err := r.Resolver.LogService.GetDailySummary(ctx, userID, date)
+	if err != nil {
+		return nil, err
+	}
 
-    // サービス層の型からGraphQLの型に変換
-    return &backend.DailySummary{
-        CaloriesIntake: summary.CaloriesIntake,
-        CaloriesBurned: summary.CaloriesBurned,
-        Protein:        summary.Protein,
-        Carbohydrate:   summary.Carbohydrate,
-        Fat:            summary.Fat,
-    }, nil
+	// サービス層の型からGraphQLの型に変換
+	return &backend.DailySummary{
+		CaloriesIntake: summary.CaloriesIntake,
+		CaloriesBurned: summary.CaloriesBurned,
+		Protein:        summary.Protein,
+		Carbohydrate:   summary.Carbohydrate,
+		Fat:            summary.Fat,
+	}, nil
 }
 
 // Mutation returns backend.MutationResolver implementation.
