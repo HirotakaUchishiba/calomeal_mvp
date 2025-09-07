@@ -45,7 +45,7 @@ const authLink = setContext(async (_, { headers }) => {
 });
 
 // エラーハンドリングリンク
-const errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
+const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors) {
     graphQLErrors.forEach(({ message, locations, path }) => {
       console.log(

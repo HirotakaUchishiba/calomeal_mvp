@@ -1,7 +1,9 @@
 // frontend/src/contexts/AuthContext.tsx
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { getCurrentUser, signOut, AuthUser } from 'aws-amplify/auth';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
+import { getCurrentUser, signOut } from 'aws-amplify/auth';
+import type { AuthUser } from 'aws-amplify/auth';
 
 // 認証状態の型定義
 interface AuthState {

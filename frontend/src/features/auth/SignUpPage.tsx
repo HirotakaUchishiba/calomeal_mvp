@@ -10,7 +10,7 @@ export const SignUpPage = () => {
   const [name, setName] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmationCode, setConfirmationCode] = useState('');
-  const [signUpResult, setSignUpResult] = useState<any>(null);
+  const [, setSignUpResult] = useState<any>(null);
   
   const { isAuthenticated, user } = useAuth();
   const { signUp, confirmSignUp, resendSignUpCode, isLoading, error, clearError } = useAuthActions();

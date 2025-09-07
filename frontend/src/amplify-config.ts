@@ -28,7 +28,7 @@ const amplifyConfig = {
     GraphQL: {
       endpoint: import.meta.env.VITE_GRAPHQL_ENDPOINT || 'http://localhost:8080/query',
       region: import.meta.env.VITE_AWS_REGION || 'ap-northeast-1',
-      defaultAuthMode: 'userPool',
+      defaultAuthMode: 'none' as const,
     },
   },
 };
@@ -59,7 +59,7 @@ const productionConfig = {
     GraphQL: {
       endpoint: import.meta.env.VITE_GRAPHQL_ENDPOINT,
       region: import.meta.env.VITE_AWS_REGION || 'ap-northeast-1',
-      defaultAuthMode: 'userPool',
+      defaultAuthMode: 'none' as const,
     },
   },
 };
