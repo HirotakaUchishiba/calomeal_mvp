@@ -11,6 +11,27 @@ type Query {
 }
 
 type Mutation {
+  "ユーザー登録 (Cognito)"
+  signUp(email: String!, password: String!): SignUpResult!
+
+  "ユーザー登録確認 (Cognito)"
+  confirmSignUp(email: String!, confirmationCode: String!): Boolean!
+
+  "ユーザーログイン (Cognito + JWT)"
+  signIn(email: String!, password: String!): AuthResult!
+
+  "ユーザーログアウト"
+  signOut: Boolean! @auth
+
+  "トークンリフレッシュ"
+  refreshToken(refreshToken: String!): AuthResult!
+
+  "パスワードリセット開始"
+  resetPassword(email: String!): Boolean!
+
+  "パスワードリセット確認"
+  confirmResetPassword(email: String!, confirmationCode: String!, newPassword: String!): Boolean!
+
   "ユーザーの初回プロフィールと目標を設定します"
   completeOnboarding(profile: UserProfileInput!, goal: UserGoalInput!): User! @auth
 
@@ -24,6 +45,23 @@ type Mutation {
 type User {
   id: ID!
   email: String!
+}
+
+"認証結果を表す型"
+type AuthResult {
+  accessToken: String!
+  refreshToken: String!
+  expiresIn: Int!
+  tokenType: String!
+  user: User!
+}
+
+"ユーザー登録結果を表す型"
+type SignUpResult {
+  userId: String!
+  email: String!
+  confirmationRequired: Boolean!
+  message: String!
 }
 
 "内部データベースの食品を表す型"
