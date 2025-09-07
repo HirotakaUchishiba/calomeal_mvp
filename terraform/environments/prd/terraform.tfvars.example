@@ -1,0 +1,16 @@
+# terraform/environments/prd/terraform.tfvars.example
+# このファイルをコピーして terraform.tfvars として使用してください
+
+# データベース設定
+db_password = "your-secure-database-password"
+
+# JWT設定
+jwt_access_secret = "your-jwt-access-secret-key"
+jwt_refresh_secret = "your-jwt-refresh-secret-key"
+
+# Cognito設定
+cognito_custom_domain = "auth.calomeal.com"  # オプション
+
+# 注意: 実際の値は terraform.tfvars で設定してください
+# このファイルはGitにコミットしないでください
+# 機密情報は環境変数またはAWS Secrets Managerを使用してください
