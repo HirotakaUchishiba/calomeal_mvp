@@ -2,18 +2,18 @@
 
 import { Amplify } from 'aws-amplify';
 
-// 開発環境用の設定（実際の値は環境変数から取得）
+// 開発環境用の設定（認証機能を無効化）
 const amplifyConfig = {
   Auth: {
     Cognito: {
-      userPoolId: import.meta.env.VITE_COGNITO_USER_POOL_ID || 'ap-northeast-1_xxxxxxxxx',
-      userPoolClientId: import.meta.env.VITE_COGNITO_CLIENT_ID || 'xxxxxxxxxxxxxxxxxxxxxxxxxx',
+      userPoolId: 'ap-northeast-1_xxxxxxxxx',
+      userPoolClientId: 'xxxxxxxxxxxxxxxxxxxxxxxxxx',
       loginWith: {
         email: true,
         username: false,
         phone: false,
       },
-      signUpVerificationMethod: 'code',
+      signUpVerificationMethod: 'code' as const,
       userAttributes: {
         email: {
           required: true,
@@ -44,7 +44,7 @@ const productionConfig = {
         username: false,
         phone: false,
       },
-      signUpVerificationMethod: 'code',
+      signUpVerificationMethod: 'code' as const,
       userAttributes: {
         email: {
           required: true,

@@ -55,6 +55,20 @@ export const useAuthActions = () => {
       setIsLoading(true);
       setError(null);
 
+      // 開発環境では認証機能を無効化
+      if (import.meta.env.DEV) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return {
+          userSub: 'dev-user-sub',
+          userConfirmed: false,
+          codeDeliveryDetails: {
+            destination: input.email,
+            deliveryMedium: 'EMAIL',
+            attributeName: 'email',
+          },
+        };
+      }
+
       const result = await signUp({
         username: input.username,
         password: input.password,
@@ -105,6 +119,28 @@ export const useAuthActions = () => {
     try {
       setIsLoading(true);
       setError(null);
+
+      // 開発環境では認証機能を無効化
+      if (import.meta.env.DEV) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // 開発環境では、localStorageにユーザー情報を保存
+        const devUser = {
+          userId: 'dev-user-id',
+          username: input.username,
+          signInDetails: {
+            loginId: input.username,
+          },
+        };
+        localStorage.setItem('dev-user', JSON.stringify(devUser));
+        
+        return {
+          isSignedIn: true,
+          nextStep: {
+            signInStep: 'DONE',
+          },
+        };
+      }
 
       const result = await signIn({
         username: input.username,

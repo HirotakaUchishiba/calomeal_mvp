@@ -9,7 +9,7 @@ export const LoginPage = () => {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, updateAuthState } = useAuth();
   const { signIn, resetPassword, isLoading, error, clearError } = useAuthActions();
   const navigate = useNavigate();
 
@@ -30,6 +30,17 @@ export const LoginPage = () => {
     });
 
     if (result) {
+      // 開発環境では認証状態を即座に更新
+      if (import.meta.env.DEV) {
+        const devUser = {
+          userId: 'dev-user-id',
+          username: email,
+          signInDetails: {
+            loginId: email,
+          },
+        };
+        updateAuthState(devUser);
+      }
       // サインイン成功時はAuthContextが自動的に状態を更新
       navigate('/dashboard');
     }

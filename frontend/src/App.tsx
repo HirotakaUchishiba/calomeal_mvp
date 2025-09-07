@@ -1,22 +1,42 @@
 import { Routes, Route } from 'react-router-dom';
-import { SignUpPage } from './features/auth/SignUpPage';
+import { AuthProvider } from './contexts/AuthContext';
+import { RequireAuth, RequireGuest } from './components/ProtectedRoute';
 import { LoginPage } from './features/auth/LoginPage';
+import { SignUpPage } from './features/auth/SignUpPage';
 import { OnboardingPage } from './features/onboarding/OnboardingPage';
 import { DashboardPage } from './features/dashboard/DashboardPage';
-// import { AuthProvider } from './contexts/AuthContext';
-// import { RequireAuth, RequireGuest } from './components/ProtectedRoute';
-// import './amplify-config'; // Amplify設定を読み込み
 
 function App() {
   return (
-    <Routes>
-      {/* 開発環境用の簡易ルート */}
-      <Route path="/" element={<LoginPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignUpPage />} />
-      <Route path="/onboarding" element={<OnboardingPage />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
-    </Routes>
+    <AuthProvider>
+      <Routes>
+        <Route path="/" element={
+          <RequireGuest>
+            <LoginPage />
+          </RequireGuest>
+        } />
+        <Route path="/login" element={
+          <RequireGuest>
+            <LoginPage />
+          </RequireGuest>
+        } />
+        <Route path="/signup" element={
+          <RequireGuest>
+            <SignUpPage />
+          </RequireGuest>
+        } />
+        <Route path="/onboarding" element={
+          <RequireAuth>
+            <OnboardingPage />
+          </RequireAuth>
+        } />
+        <Route path="/dashboard" element={
+          <RequireAuth>
+            <DashboardPage />
+          </RequireAuth>
+        } />
+      </Routes>
+    </AuthProvider>
   );
 }
 

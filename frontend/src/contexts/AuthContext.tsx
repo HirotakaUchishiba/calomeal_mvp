@@ -18,6 +18,7 @@ interface AuthContextType extends AuthState {
   signOut: () => Promise<void>;
   clearError: () => void;
   refreshUser: () => Promise<void>;
+  updateAuthState: (user: any) => void;
 }
 
 // 認証コンテキストの作成
@@ -42,6 +43,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
       
+      // 開発環境では認証機能を無効化
+      if (import.meta.env.DEV) {
+        // 開発環境では、localStorageから認証状態を確認
+        const devUser = localStorage.getItem('dev-user');
+        if (devUser) {
+          const user = JSON.parse(devUser);
+          setAuthState({
+            user,
+            isLoading: false,
+            isAuthenticated: true,
+            error: null,
+          });
+        } else {
+          setAuthState({
+            user: null,
+            isLoading: false,
+            isAuthenticated: false,
+            error: null,
+          });
+        }
+        return;
+      }
+      
       const user = await getCurrentUser();
       setAuthState({
         user,
@@ -65,10 +89,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await fetchCurrentUser();
   };
 
+  // 開発環境用の認証状態更新
+  const updateAuthState = (user: any) => {
+    setAuthState({
+      user,
+      isLoading: false,
+      isAuthenticated: true,
+      error: null,
+    });
+  };
+
   // サインアウト
   const handleSignOut = async () => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+      
+      // 開発環境では認証機能を無効化
+      if (import.meta.env.DEV) {
+        localStorage.removeItem('dev-user');
+        setAuthState({
+          user: null,
+          isLoading: false,
+          isAuthenticated: false,
+          error: null,
+        });
+        return;
+      }
+      
       await signOut();
       setAuthState({
         user: null,
@@ -115,6 +162,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signOut: handleSignOut,
     clearError,
     refreshUser,
+    updateAuthState,
   };
 
   return (
