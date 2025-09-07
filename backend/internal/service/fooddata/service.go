@@ -1,7 +1,10 @@
 // backend/internal/service/fooddata/service.go
 package fooddata
 
-import "context"
+import (
+	"context"
+	"database/sql"
+)
 
 // Foodはデータベースのfoodsテーブルのレコードを表します
 type Food struct {
@@ -21,29 +24,55 @@ type Service interface {
 }
 
 type service struct {
-	// TODO: ここにデータベース接続(リポジトリ)を保持します
+	db *sql.DB
 }
 
 // NewServiceは新しいfooddataサービスインスタンスを作成します
-func NewService() Service {
-	return &service{}
+func NewService(db *sql.DB) Service {
+	return &service{db: db}
 }
 
 // SearchFoodはキーワードで食品を検索します
 func (s *service) SearchFood(ctx context.Context, query string) ([]Food, error) {
-	// 【メンターズノート】
-	// ここで、設計資料で指定されたPostgreSQLの全文検索を実装します。
-	// `to_tsvector`でドキュメントをベクトル化し、`to_tsquery`でクエリをベクトル化し、
-	// `@@`演算子でマッチングを行います。GINインデックスにより、この検索は非常に高速です。
-	// 実際のDBライブラリ(GORMなど)では以下のようなクエリを生成します:
-	// SELECT * FROM foods WHERE to_tsvector('simple', name) @@ to_tsquery('simple', 'your_query') LIMIT 20;
+	// PostgreSQLの全文検索とLIKE検索を組み合わせて食品を検索
+	// 日本語検索に対応するため、LIKE検索も併用
+	const searchQuery = `
+		SELECT id, name, brand, calories, protein, carbohydrate, fat
+		FROM foods 
+		WHERE to_tsvector('simple', name) @@ to_tsquery('simple', $1)
+		   OR name ILIKE $2
+		ORDER BY name
+		LIMIT 20
+	`
 
-	// 現時点ではダミーデータを返します
-	// TODO: 実際のデータベース検索ロジックを実装
-	if query == "ごはん" {
-		return []Food{{
-			ID: 2, Name: "ごはん", Brand: nil, Calories: 168, Protein: 2.5, Carbohydrate: 37, Fat: 0.3,
-		}}, nil
+	likePattern := "%" + query + "%"
+	rows, err := s.db.QueryContext(ctx, searchQuery, query, likePattern)
+	if err != nil {
+		return nil, err
 	}
-	return []Food{}, nil
+	defer rows.Close()
+
+	var foods []Food
+	for rows.Next() {
+		var food Food
+		err := rows.Scan(
+			&food.ID,
+			&food.Name,
+			&food.Brand,
+			&food.Calories,
+			&food.Protein,
+			&food.Carbohydrate,
+			&food.Fat,
+		)
+		if err != nil {
+			return nil, err
+		}
+		foods = append(foods, food)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return foods, nil
 }
