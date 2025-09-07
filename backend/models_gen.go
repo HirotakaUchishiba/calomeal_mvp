@@ -2,6 +2,15 @@
 
 package backend
 
+// 認証結果を表す型
+type AuthResult struct {
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+	ExpiresIn    int    `json:"expiresIn"`
+	TokenType    string `json:"tokenType"`
+	User         *User  `json:"user"`
+}
+
 // 一日の栄養サマリーを表す型
 type DailySummary struct {
 	// 総摂取カロリー
@@ -77,6 +86,14 @@ type Mutation struct {
 }
 
 type Query struct {
+}
+
+// ユーザー登録結果を表す型
+type SignUpResult struct {
+	UserID               string `json:"userId"`
+	Email                string `json:"email"`
+	ConfirmationRequired bool   `json:"confirmationRequired"`
+	Message              string `json:"message"`
 }
 
 type User struct {
