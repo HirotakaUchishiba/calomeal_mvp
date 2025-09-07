@@ -30,7 +30,7 @@ func (r *mutationResolver) SignUp(ctx context.Context, email string, password st
 	return &backend.SignUpResult{
 		UserID:               *result.UserSub,
 		Email:                email,
-		ConfirmationRequired: *result.UserConfirmed == false,
+		ConfirmationRequired: !result.UserConfirmed,
 		Message:              "User registration initiated. Please check your email for confirmation code.",
 	}, nil
 }
@@ -72,7 +72,7 @@ func (r *mutationResolver) SignIn(ctx context.Context, email string, password st
 		if err != nil {
 			return nil, fmt.Errorf("failed to get user info: %w", err)
 		}
-		
+
 		// ユーザー属性から情報を抽出
 		for _, attr := range user.UserAttributes {
 			if *attr.Name == "sub" {
@@ -92,7 +92,7 @@ func (r *mutationResolver) SignIn(ctx context.Context, email string, password st
 	return &backend.AuthResult{
 		AccessToken:  tokenPair.AccessToken,
 		RefreshToken: tokenPair.RefreshToken,
-		ExpiresIn:    tokenPair.ExpiresIn,
+		ExpiresIn:    int(tokenPair.ExpiresIn),
 		TokenType:    tokenPair.TokenType,
 		User: &backend.User{
 			ID:    userID,
@@ -109,19 +109,17 @@ func (r *mutationResolver) SignOut(ctx context.Context) (bool, error) {
 		return false, fmt.Errorf("user not authenticated")
 	}
 
-	authService := auth.NewService()
-	
 	// トークンを無効化（実際の実装では、リクエストヘッダーからトークンを取得）
 	// ここでは簡易的にユーザーIDのみでログアウト処理
 	fmt.Printf("User %s signed out successfully\n", userID)
-	
+
 	return true, nil
 }
 
 // RefreshToken is the resolver for the refreshToken field.
 func (r *mutationResolver) RefreshToken(ctx context.Context, refreshToken string) (*backend.AuthResult, error) {
 	authService := auth.NewService()
-	
+
 	// リフレッシュトークンを使用して新しいトークンペアを生成
 	tokenPair, err := authService.RefreshToken(ctx, refreshToken)
 	if err != nil {
@@ -137,7 +135,7 @@ func (r *mutationResolver) RefreshToken(ctx context.Context, refreshToken string
 	return &backend.AuthResult{
 		AccessToken:  tokenPair.AccessToken,
 		RefreshToken: tokenPair.RefreshToken,
-		ExpiresIn:    tokenPair.ExpiresIn,
+		ExpiresIn:    int(tokenPair.ExpiresIn),
 		TokenType:    tokenPair.TokenType,
 		User: &backend.User{
 			ID:    claims.UserID,

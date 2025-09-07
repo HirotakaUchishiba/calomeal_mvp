@@ -4,7 +4,6 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 

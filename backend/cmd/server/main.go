@@ -58,7 +58,7 @@ func main() {
 
 	// 認証サービスを初期化
 	authService := auth.NewService()
-	
+
 	// 認証ミドルウェアを初期化
 	middleware.InitAuthMiddleware(authService)
 
