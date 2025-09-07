@@ -70,9 +70,95 @@ button:focus-visible {
 /* モーダルのコンテンツ部分 */
 .modal-content {
   background-color: white;
-  padding: 20px;
+  padding: 30px;
+  border-radius: 12px;
+  min-width: 500px;
+  max-width: 600px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* フォームスタイル */
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modal-content form div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.modal-content label {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.modal-content input,
+.modal-content select {
+  padding: 12px;
+  border: 2px solid #e1e5e9;
   border-radius: 8px;
-  min-width: 400px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.modal-content input:focus,
+.modal-content select:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.modal-content button {
+  padding: 12px 24px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.modal-content button:hover {
+  background-color: #45a049;
+}
+
+.modal-content button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* FAB（フローティングアクションボタン） */
+.fab-container {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fab-container button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.fab-container button:hover {
+  background-color: #45a049;
+  transform: scale(1.1);
 }
 
 @media (prefers-color-scheme: light) {
