@@ -8,11 +8,12 @@ import {
   resetPassword, 
   confirmResetPassword,
   resendSignUpCode,
+} from 'aws-amplify/auth';
+import type {
   ResendSignUpCodeOutput,
   SignUpOutput,
   SignInOutput,
   ResetPasswordOutput,
-  ConfirmResetPasswordOutput,
 } from 'aws-amplify/auth';
 
 // サインアップ用の型定義
@@ -143,22 +144,20 @@ export const useAuthActions = () => {
   // パスワードリセット確認
   const handleConfirmResetPassword = async (
     input: ConfirmResetPasswordInput
-  ): Promise<ConfirmResetPasswordOutput | null> => {
+  ): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const result = await confirmResetPassword({
+      await confirmResetPassword({
         username: input.username,
         confirmationCode: input.confirmationCode,
         newPassword: input.newPassword,
       });
-
-      return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Password reset confirmation failed';
       setError(errorMessage);
-      return null;
+      throw err;
     } finally {
       setIsLoading(false);
     }
