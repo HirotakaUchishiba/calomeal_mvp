@@ -1,0 +1,182 @@
+{
+  "main": {
+    "id": "8f57c926e40a46f2",
+    "type": "split",
+    "children": [
+      {
+        "id": "a756433d6a98eba8",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "688093fd3c1ec77e",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "07_Proactive_Mentoring_Guide.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "07_Proactive_Mentoring_Guide"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "c5cdea2bd4956d5e",
+    "type": "split",
+    "children": [
+      {
+        "id": "43d79fcb27710cef",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "cfac5e40198c35c8",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "41e7dc82278f8588",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "5c1f7ab81078dae9",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "85779775884d1ac8",
+    "type": "split",
+    "children": [
+      {
+        "id": "5dca42866213e13d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "ed11c1e90f5507c4",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "07_Proactive_Mentoring_Guide.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for 07_Proactive_Mentoring_Guide"
+            }
+          },
+          {
+            "id": "9fb48a591e4b3aec",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "07_Proactive_Mentoring_Guide.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from 07_Proactive_Mentoring_Guide"
+            }
+          },
+          {
+            "id": "0dc5f1a8606f29d9",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "3f6d1e85bf73829e",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "07_Proactive_Mentoring_Guide.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of 07_Proactive_Mentoring_Guide"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "688093fd3c1ec77e",
+  "lastOpenFiles": [
+    "06_AI_Driven_Development_Roadmap.md",
+    "05_Infrastructure_and_DevOps.md",
+    "04_Frontend_Design.md",
+    "03_Backend_Design.md",
+    "02_System_Architecture.md",
+    "01_Project_Charter_and_Scope.md",
+    "07_Proactive_Mentoring_Guide.md"
+  ]
+}
