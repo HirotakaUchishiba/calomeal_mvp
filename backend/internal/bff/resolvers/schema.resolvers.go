@@ -9,9 +9,170 @@ import (
 	"fmt"
 
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend"
+	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/bff/middleware"
+	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/auth"
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/log"
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/user"
 )
+
+// SignUp is the resolver for the signUp field.
+func (r *mutationResolver) SignUp(ctx context.Context, email string, password string) (*backend.SignUpResult, error) {
+	cognitoService, err := auth.NewCognitoService()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create cognito service: %w", err)
+	}
+
+	result, err := cognitoService.SignUp(ctx, email, password)
+	if err != nil {
+		return nil, fmt.Errorf("signup failed: %w", err)
+	}
+
+	return &backend.SignUpResult{
+		UserID:               *result.UserSub,
+		Email:                email,
+		ConfirmationRequired: !result.UserConfirmed,
+		Message:              "User registration initiated. Please check your email for confirmation code.",
+	}, nil
+}
+
+// ConfirmSignUp is the resolver for the confirmSignUp field.
+func (r *mutationResolver) ConfirmSignUp(ctx context.Context, email string, confirmationCode string) (bool, error) {
+	cognitoService, err := auth.NewCognitoService()
+	if err != nil {
+		return false, fmt.Errorf("failed to create cognito service: %w", err)
+	}
+
+	err = cognitoService.ConfirmSignUp(ctx, email, confirmationCode)
+	if err != nil {
+		return false, fmt.Errorf("confirmation failed: %w", err)
+	}
+
+	return true, nil
+}
+
+// SignIn is the resolver for the signIn field.
+func (r *mutationResolver) SignIn(ctx context.Context, email string, password string) (*backend.AuthResult, error) {
+	cognitoService, err := auth.NewCognitoService()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create cognito service: %w", err)
+	}
+
+	authService := auth.NewService()
+
+	// Cognitoで認証
+	cognitoResult, err := cognitoService.SignIn(ctx, email, password)
+	if err != nil {
+		return nil, fmt.Errorf("signin failed: %w", err)
+	}
+
+	// Cognitoの結果からユーザー情報を取得
+	var userID, userEmail string
+	if cognitoResult.AuthenticationResult != nil && cognitoResult.AuthenticationResult.AccessToken != nil {
+		user, err := cognitoService.GetUser(ctx, *cognitoResult.AuthenticationResult.AccessToken)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get user info: %w", err)
+		}
+
+		// ユーザー属性から情報を抽出
+		for _, attr := range user.UserAttributes {
+			if *attr.Name == "sub" {
+				userID = *attr.Value
+			} else if *attr.Name == "email" {
+				userEmail = *attr.Value
+			}
+		}
+	}
+
+	// JWTトークンペアを生成
+	tokenPair, err := authService.GenerateTokenPair(ctx, userID, userEmail)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate tokens: %w", err)
+	}
+
+	return &backend.AuthResult{
+		AccessToken:  tokenPair.AccessToken,
+		RefreshToken: tokenPair.RefreshToken,
+		ExpiresIn:    int(tokenPair.ExpiresIn),
+		TokenType:    tokenPair.TokenType,
+		User: &backend.User{
+			ID:    userID,
+			Email: userEmail,
+		},
+	}, nil
+}
+
+// SignOut is the resolver for the signOut field.
+func (r *mutationResolver) SignOut(ctx context.Context) (bool, error) {
+	// 認証されたユーザーの情報を取得
+	userID, ok := middleware.GetUserIDFromContext(ctx)
+	if !ok {
+		return false, fmt.Errorf("user not authenticated")
+	}
+
+	// トークンを無効化（実際の実装では、リクエストヘッダーからトークンを取得）
+	// ここでは簡易的にユーザーIDのみでログアウト処理
+	fmt.Printf("User %s signed out successfully\n", userID)
+
+	return true, nil
+}
+
+// RefreshToken is the resolver for the refreshToken field.
+func (r *mutationResolver) RefreshToken(ctx context.Context, refreshToken string) (*backend.AuthResult, error) {
+	authService := auth.NewService()
+
+	// リフレッシュトークンを使用して新しいトークンペアを生成
+	tokenPair, err := authService.RefreshToken(ctx, refreshToken)
+	if err != nil {
+		return nil, fmt.Errorf("token refresh failed: %w", err)
+	}
+
+	// トークンからユーザー情報を取得
+	claims, err := authService.ValidateToken(ctx, tokenPair.AccessToken)
+	if err != nil {
+		return nil, fmt.Errorf("failed to validate new token: %w", err)
+	}
+
+	return &backend.AuthResult{
+		AccessToken:  tokenPair.AccessToken,
+		RefreshToken: tokenPair.RefreshToken,
+		ExpiresIn:    int(tokenPair.ExpiresIn),
+		TokenType:    tokenPair.TokenType,
+		User: &backend.User{
+			ID:    claims.UserID,
+			Email: claims.Email,
+		},
+	}, nil
+}
+
+// ResetPassword is the resolver for the resetPassword field.
+func (r *mutationResolver) ResetPassword(ctx context.Context, email string) (bool, error) {
+	cognitoService, err := auth.NewCognitoService()
+	if err != nil {
+		return false, fmt.Errorf("failed to create cognito service: %w", err)
+	}
+
+	err = cognitoService.ResetPassword(ctx, email)
+	if err != nil {
+		return false, fmt.Errorf("password reset failed: %w", err)
+	}
+
+	return true, nil
+}
+
+// ConfirmResetPassword is the resolver for the confirmResetPassword field.
+func (r *mutationResolver) ConfirmResetPassword(ctx context.Context, email string, confirmationCode string, newPassword string) (bool, error) {
+	cognitoService, err := auth.NewCognitoService()
+	if err != nil {
+		return false, fmt.Errorf("failed to create cognito service: %w", err)
+	}
+
+	err = cognitoService.ConfirmResetPassword(ctx, email, confirmationCode, newPassword)
+	if err != nil {
+		return false, fmt.Errorf("password reset confirmation failed: %w", err)
+	}
+
+	return true, nil
+}
 
 // CompleteOnboarding is the resolver for the completeOnboarding field.
 func (r *mutationResolver) CompleteOnboarding(ctx context.Context, profile backend.UserProfileInput, goal backend.UserGoalInput) (*backend.User, error) {

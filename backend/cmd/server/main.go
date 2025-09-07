@@ -11,6 +11,7 @@ import (
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend"
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/bff/middleware"
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/bff/resolvers"
+	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/auth"
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/fooddata"
 	logsvc "github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/log"
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/user"
@@ -54,6 +55,12 @@ func main() {
 	if err := db.Ping(); err != nil {
 		log.Fatal("Failed to ping database:", err)
 	}
+
+	// 認証サービスを初期化
+	authService := auth.NewService()
+
+	// 認証ミドルウェアを初期化
+	middleware.InitAuthMiddleware(authService)
 
 	// リゾルバのインスタンスを作成し、各サービスを注入（依存性の注入）
 	resolver := &resolvers.Resolver{
