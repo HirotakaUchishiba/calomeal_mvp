@@ -1,4 +1,6 @@
 import React from 'react';
+import { useQuery } from '@apollo/client';
+import { GET_FOOD_LOGS_QUERY, GET_EXERCISE_LOGS_QUERY } from '../graphql/queries';
 
 // ログアイテムの型定義
 type LogItem = {
@@ -14,46 +16,88 @@ type LogItem = {
 
 type Props = {
   date: string;
-  logs?: LogItem[];
 };
 
-export const LogList = ({ date, logs = [] }: Props) => {
-  // モックデータ（実際の実装ではGraphQLクエリから取得）
-  const mockLogs: LogItem[] = [
-    {
-      id: '1',
-      type: 'food',
-      name: 'ごはん',
-      details: '150g',
-      calories: 252,
-      loggedAt: '2025-01-08T12:30:00Z',
+export const LogList = ({ date }: Props) => {
+  // 食事記録を取得
+  const { data: foodData, loading: foodLoading, error: foodError } = useQuery(GET_FOOD_LOGS_QUERY, {
+    variables: { date }
+  });
+
+  // 運動記録を取得
+  const { data: exerciseData, loading: exerciseLoading, error: exerciseError } = useQuery(GET_EXERCISE_LOGS_QUERY, {
+    variables: { date }
+  });
+
+  // データを統合してLogItem形式に変換
+  const logs: LogItem[] = React.useMemo(() => {
+    const foodLogs: LogItem[] = (foodData?.foodLogs || []).map((log: any) => ({
+      id: log.id,
+      type: 'food' as const,
+      name: log.foodName,
+      details: `${log.quantity}${log.unit}`,
+      calories: log.calories,
+      loggedAt: log.loggedAt,
       icon: '🍽️',
       color: '#FF9800'
-    },
-    {
-      id: '2',
-      type: 'exercise',
-      name: 'ランニング',
-      details: '30分',
-      calories: 300,
-      loggedAt: '2025-01-08T18:00:00Z',
+    }));
+
+    const exerciseLogs: LogItem[] = (exerciseData?.exerciseLogs || []).map((log: any) => ({
+      id: log.id,
+      type: 'exercise' as const,
+      name: log.exerciseName,
+      details: `${log.durationMinutes}分`,
+      calories: log.caloriesBurned,
+      loggedAt: log.loggedAt,
       icon: '🏃',
       color: '#2196F3'
-    },
-    {
-      id: '3',
-      type: 'food',
-      name: '鶏むね肉',
-      details: '100g',
-      calories: 116,
-      loggedAt: '2025-01-08T19:30:00Z',
-      icon: '🍽️',
-      color: '#FF9800'
-    }
-  ];
+    }));
+
+    // 食事記録と運動記録を統合して時間順でソート
+    return [...foodLogs, ...exerciseLogs].sort((a, b) => 
+      new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime()
+    );
+  }, [foodData, exerciseData]);
+
+  // ローディング状態
+  if (foodLoading || exerciseLoading) {
+    return (
+      <div style={{
+        padding: '20px',
+        textAlign: 'center',
+        color: '#666',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '8px',
+        marginTop: '20px'
+      }}>
+        <div style={{ fontSize: '24px', marginBottom: '10px' }}>⏳</div>
+        <p>記録を読み込み中...</p>
+      </div>
+    );
+  }
+
+  // エラー状態
+  if (foodError || exerciseError) {
+    return (
+      <div style={{
+        padding: '20px',
+        textAlign: 'center',
+        color: '#d32f2f',
+        backgroundColor: '#ffebee',
+        borderRadius: '8px',
+        marginTop: '20px'
+      }}>
+        <div style={{ fontSize: '24px', marginBottom: '10px' }}>⚠️</div>
+        <p>記録の読み込みに失敗しました</p>
+        <p style={{ fontSize: '14px', marginTop: '5px' }}>
+          {foodError?.message || exerciseError?.message}
+        </p>
+      </div>
+    );
+  }
 
   // ログがない場合の表示
-  if (mockLogs.length === 0) {
+  if (logs.length === 0) {
     return (
       <div style={{
         padding: '20px',
@@ -73,7 +117,7 @@ export const LogList = ({ date, logs = [] }: Props) => {
   }
 
   // 時間でソート（新しい順）
-  const sortedLogs = [...mockLogs].sort((a, b) => 
+  const sortedLogs = [...logs].sort((a, b) => 
     new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime()
   );
 
@@ -221,14 +265,14 @@ export const LogList = ({ date, logs = [] }: Props) => {
               color: '#FF9800',
               fontWeight: '600'
             }}>
-              摂取: {mockLogs.filter(log => log.type === 'food').reduce((sum, log) => sum + log.calories, 0)} kcal
+              摂取: {logs.filter(log => log.type === 'food').reduce((sum, log) => sum + log.calories, 0)} kcal
             </span>
             <span style={{
               fontSize: '14px',
               color: '#2196F3',
               fontWeight: '600'
             }}>
-              消費: {mockLogs.filter(log => log.type === 'exercise').reduce((sum, log) => sum + log.calories, 0)} kcal
+              消費: {logs.filter(log => log.type === 'exercise').reduce((sum, log) => sum + log.calories, 0)} kcal
             </span>
           </div>
         </div>
