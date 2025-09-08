@@ -6,6 +6,12 @@ FROM node:18-alpine
 # 2. コンテナ内の作業ディレクトリを指定
 WORKDIR /app
 
-# 3. このコンテナが起動したときに実行されるデフォルトのコマンド
-# (コンテナを起動し続けるためのおまじない。後でReactの起動コマンドに置き換えます)
-CMD [ "tail", "-f", "/dev/null" ]
+# 3. package.jsonとpackage-lock.jsonをコピーして依存関係をインストール
+COPY package*.json ./
+RUN npm install
+
+# 4. アプリケーションのソースコードをコピー
+COPY . .
+
+# 5. 開発サーバーを起動（ホスト0.0.0.0でリッスンしてコンテナ外からアクセス可能にする）
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

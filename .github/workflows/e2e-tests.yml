@@ -56,26 +56,53 @@ jobs:
           COGNITO_REGION=us-east-1
           GRAPHQL_ENDPOINT=http://localhost:8080/graphql
           EOF
+          echo "環境変数ファイルを作成しました"
+          cat .env
+          echo "Docker Composeでアプリケーションを起動中..."
           docker compose up -d
-          # アプリケーションの起動を待機
+          echo "アプリケーションの起動を待機中..."
           sleep 30
+          echo "Docker Composeの状況を確認:"
+          docker compose ps
+          echo "Docker ログを確認:"
+          docker compose logs --tail=50
         working-directory: ./
 
       # 6. アプリケーションのヘルスチェック
       - name: Health check
         run: |
           echo "アプリケーションの起動を待機中..."
+          echo "現在のDocker Compose状況:"
+          docker compose ps
+          echo "ポートの使用状況を確認:"
+          netstat -tlnp || ss -tlnp || echo "ポート確認コマンドが利用できません"
           # 最大60秒間、10秒間隔でヘルスチェック
           for i in {1..6}; do
             echo "ヘルスチェック試行 $i/6"
-            if curl -f http://localhost:3000 && curl -f http://localhost:8080/health; then
+            echo "フロントエンド (http://localhost:3000) をチェック..."
+            if curl -f http://localhost:3000; then
+              echo "✅ フロントエンドが応答しています"
+            else
+              echo "❌ フロントエンドが応答していません"
+              curl -v http://localhost:3000 || echo "curl詳細エラー"
+            fi
+            echo "バックエンド (http://localhost:8080/health) をチェック..."
+            if curl -f http://localhost:8080/health; then
+              echo "✅ バックエンドが応答しています"
               echo "アプリケーションが正常に起動しました"
               exit 0
+            else
+              echo "❌ バックエンドが応答していません"
+              curl -v http://localhost:8080/health || echo "curl詳細エラー"
             fi
             echo "アプリケーションの起動を待機中... (10秒後再試行)"
             sleep 10
           done
           echo "アプリケーションの起動に失敗しました"
+          echo "最終的なDocker Compose状況:"
+          docker compose ps
+          echo "最終的なDocker ログ:"
+          docker compose logs --tail=100
           exit 1
 
       # 7. E2Eテストを実行
