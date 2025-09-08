@@ -63,7 +63,7 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
+  webServer: process.env.CI ? undefined : {
     command: 'docker-compose up -d',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
