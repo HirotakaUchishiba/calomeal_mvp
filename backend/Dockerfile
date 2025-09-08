@@ -5,7 +5,7 @@ FROM golang:1.25-alpine
 WORKDIR /app
 
 # 3. Goモジュールの依存関係を先にコピーしてキャッシュする
-COPY go.mod go.sum ./
+COPY backend/go.mod backend/go.sum ./
 RUN go mod tidy
 
 # 4. wait-for-itスクリプトをコピー
@@ -13,7 +13,7 @@ COPY wait-for-it.sh /wait-for-it.sh
 RUN chmod +x /wait-for-it.sh
 
 # 5. アプリケーションのソースコードをコピーする
-COPY . .
+COPY backend/ .
 
 RUN go mod tidy
 

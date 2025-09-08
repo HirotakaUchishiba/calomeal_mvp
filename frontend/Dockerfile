@@ -7,11 +7,11 @@ FROM node:18-alpine
 WORKDIR /app
 
 # 3. package.jsonとpackage-lock.jsonをコピーして依存関係をインストール
-COPY package*.json ./
+COPY frontend/package*.json ./
 RUN npm install
 
 # 4. アプリケーションのソースコードをコピー
-COPY . .
+COPY frontend/ .
 
 # 5. 開発サーバーを起動（ホスト0.0.0.0でリッスンしてコンテナ外からアクセス可能にする）
 CMD ["npx", "vite", "--host", "0.0.0.0", "--port", "3000"]
