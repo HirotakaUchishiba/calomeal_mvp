@@ -1,0 +1,30 @@
+{
+  "name": "calomeal_mvp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HirotakaUchishiba/calomeal_mvp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HirotakaUchishiba/calomeal_mvp/issues"
+  },
+  "homepage": "https://github.com/HirotakaUchishiba/calomeal_mvp#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}
