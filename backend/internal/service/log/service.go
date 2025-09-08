@@ -33,11 +33,35 @@ type LogFoodInput struct {
 	Fat             float64
   }
 
+// FoodLogは食事記録を表します
+type FoodLog struct {
+	ID           int64
+	FoodName     string
+	Quantity     float64
+	Unit         string
+	Calories     float64
+	Protein      float64
+	Carbohydrate float64
+	Fat          float64
+	LoggedAt     string
+}
+
+// ExerciseLogは運動記録を表します
+type ExerciseLog struct {
+	ID              int64
+	ExerciseName    string
+	DurationMinutes int
+	CaloriesBurned  float64
+	LoggedAt        string
+}
+
 // Serviceは記録関連のビジネスロジックのインターフェースです
 type Service interface {
 	LogExercise(ctx context.Context, userID string, input LogExerciseInput) (int64, error)
 	LogFood(ctx context.Context, userID string, input LogFoodInput) (int64, error)
 	GetDailySummary(ctx context.Context, userID, date string) (DailySummary, error)
+	GetFoodLogs(ctx context.Context, userID, date string) ([]FoodLog, error)
+	GetExerciseLogs(ctx context.Context, userID, date string) ([]ExerciseLog, error)
 }
 
 type service struct {
@@ -111,4 +135,84 @@ func (s *service) GetDailySummary(ctx context.Context, userID, date string) (Dai
 		return DailySummary{}, err
 	}
 	return ds, nil
+}
+
+// GetFoodLogsは指定された日付の食事記録を取得します
+func (s *service) GetFoodLogs(ctx context.Context, userID, date string) ([]FoodLog, error) {
+	const q = `
+		SELECT id, food_name, quantity, unit, calories, protein, carbohydrate, fat, logged_at
+		FROM food_logs
+		WHERE user_id = $1
+		  AND DATE_TRUNC('day', logged_at) = DATE_TRUNC('day', $2::timestamptz)
+		ORDER BY logged_at DESC
+	`
+	rows, err := s.db.QueryContext(ctx, q, userID, date)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var logs []FoodLog
+	for rows.Next() {
+		var log FoodLog
+		err := rows.Scan(
+			&log.ID,
+			&log.FoodName,
+			&log.Quantity,
+			&log.Unit,
+			&log.Calories,
+			&log.Protein,
+			&log.Carbohydrate,
+			&log.Fat,
+			&log.LoggedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		logs = append(logs, log)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return logs, nil
+}
+
+// GetExerciseLogsは指定された日付の運動記録を取得します
+func (s *service) GetExerciseLogs(ctx context.Context, userID, date string) ([]ExerciseLog, error) {
+	const q = `
+		SELECT id, exercise_name, duration_minutes, calories_burned, logged_at
+		FROM exercise_logs
+		WHERE user_id = $1
+		  AND DATE_TRUNC('day', logged_at) = DATE_TRUNC('day', $2::timestamptz)
+		ORDER BY logged_at DESC
+	`
+	rows, err := s.db.QueryContext(ctx, q, userID, date)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var logs []ExerciseLog
+	for rows.Next() {
+		var log ExerciseLog
+		err := rows.Scan(
+			&log.ID,
+			&log.ExerciseName,
+			&log.DurationMinutes,
+			&log.CaloriesBurned,
+			&log.LoggedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		logs = append(logs, log)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return logs, nil
 }
