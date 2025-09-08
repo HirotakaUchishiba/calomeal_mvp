@@ -1,11 +1,11 @@
-このドキュメントは、「Lean MVPブループリント」で定義されたアーキテクチャに基づき、サーバーサイドの実装仕様を詳細に定義します。
+このドキュメントは、「Lean MVPブループリント」で定義されたアーキテクチャに基づき、サーバーサイドの実装仕様を詳細に定義します。公開契約は GraphQL、内部契約は gRPC（Protocol Buffers）を採用します。
 
 ## 4.1. APIコントラクト定義 (GraphQLスキーマ)
 
 Lean MVPのスコープに合わせて、GraphQLスキーマを大幅に簡素化します。バーコード検索、カスタムメニュー関連のクエリとミューテーションは完全に削除します。
 
 ```graphql
-# backend/schema.graphqls
+# backend/schema.graphql
 
 directive @auth on FIELD_DEFINITION
 
@@ -143,3 +143,46 @@ CREATE TABLE exercise_logs (
     * **総消費カロリー**: `exercise_logs`の`calories_burned`カラムの合計値。
     * **PFC摂取量**: `food_logs`の`protein`, `fat`, `carbohydrate`カラムのそれぞれの合計値。
 * これらの集計結果を`DailySummary`型としてフロントエンドに返却します。
+
+## 4.5. gRPC API 契約（Proto）
+
+内部のサービス間通信は gRPC を用います。以下は代表的なサービスの契約概要です（詳細は `docs/09_Microservices_and_gRPC.md` 参照）。
+
+### usersvc
+- Service: `users.v1.UserService`
+- Methods: `GetOrCreateUser`, `CompleteOnboarding`
+- Metadata: Cognito JWT の `sub` を `x-user-id` として必須
+
+### foodsvc
+- Service: `foods.v1.FoodService`
+- Methods: `SearchFoods`
+
+### logsvc
+- Service: `logs.v1.LogService`
+- Methods: `LogFood`, `LogExercise`, `LogWeight`, `ListFoodLogsByDate`, `ListExerciseLogsByDate`, `ListWeightLogsByDate`
+
+### analytics
+- Service: `analytics.v1.AnalyticsService`
+- Methods: `GetDailySummary`
+
+### エラーポリシー/リトライ
+- gRPC ステータスを使用（`InvalidArgument`, `NotFound`, `Unauthenticated`, `PermissionDenied`, `DeadlineExceeded`, `Unavailable` 等）
+- BFF はデッドライン（例: 1-2s）を設定し、`Unavailable` は限定的にリトライ
+- 変更安全なミューテーションは idempotency-key をメタデータで受け付ける
+
+## 4.6. BFF とサービスの対応
+
+GraphQL Resolver と gRPC サービスの対応表（抜粋）:
+
+- `Query.dailySummary` → `analytics.v1.AnalyticsService/GetDailySummary`
+- `Query.searchFood` → `foods.v1.FoodService/SearchFoods`
+- `Mutation.logFood` → `logs.v1.LogService/LogFood`
+- `Mutation.logExercise` → `logs.v1.LogService/LogExercise`
+- `Mutation.logWeight` → `logs.v1.LogService/LogWeight`
+- `Mutation.completeOnboarding` → `users.v1.UserService/CompleteOnboarding`
+
+## 4.7. 認証・認可
+
+- BFF の `@auth` ディレクティブで Cognito JWT を検証
+- gRPC 呼び出し時に `x-user-id`, `x-email` メタデータでユーザー情報を伝播
+- サービス側ではメタデータ必須チェックを行い、監査ログへ記録
