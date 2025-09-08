@@ -327,6 +327,60 @@ func (r *queryResolver) DailySummary(ctx context.Context, date string) (*backend
 	}, nil
 }
 
+// FoodLogs is the resolver for the foodLogs field.
+func (r *queryResolver) FoodLogs(ctx context.Context, date string) ([]*backend.FoodLog, error) {
+	// TODO: コンテキストから実際のユーザーIDを取得
+	userID := "550e8400-e29b-41d4-a716-446655440000"
+
+	// LogServiceから食事記録を取得
+	logs, err := r.Resolver.LogService.GetFoodLogs(ctx, userID, date)
+	if err != nil {
+		return nil, err
+	}
+
+	// サービス層の型からGraphQLの型に変換
+	foodLogs := make([]*backend.FoodLog, 0, len(logs))
+	for _, log := range logs {
+		foodLogs = append(foodLogs, &backend.FoodLog{
+			ID:           fmt.Sprintf("%d", log.ID),
+			FoodName:     log.FoodName,
+			Quantity:     log.Quantity,
+			Unit:         log.Unit,
+			Calories:     log.Calories,
+			Protein:      log.Protein,
+			Carbohydrate: log.Carbohydrate,
+			Fat:          log.Fat,
+			LoggedAt:     log.LoggedAt,
+		})
+	}
+	return foodLogs, nil
+}
+
+// ExerciseLogs is the resolver for the exerciseLogs field.
+func (r *queryResolver) ExerciseLogs(ctx context.Context, date string) ([]*backend.ExerciseLog, error) {
+	// TODO: コンテキストから実際のユーザーIDを取得
+	userID := "550e8400-e29b-41d4-a716-446655440000"
+
+	// LogServiceから運動記録を取得
+	logs, err := r.Resolver.LogService.GetExerciseLogs(ctx, userID, date)
+	if err != nil {
+		return nil, err
+	}
+
+	// サービス層の型からGraphQLの型に変換
+	exerciseLogs := make([]*backend.ExerciseLog, 0, len(logs))
+	for _, log := range logs {
+		exerciseLogs = append(exerciseLogs, &backend.ExerciseLog{
+			ID:              fmt.Sprintf("%d", log.ID),
+			ExerciseName:    log.ExerciseName,
+			DurationMinutes: log.DurationMinutes,
+			CaloriesBurned:  log.CaloriesBurned,
+			LoggedAt:        log.LoggedAt,
+		})
+	}
+	return exerciseLogs, nil
+}
+
 // Mutation returns backend.MutationResolver implementation.
 func (r *Resolver) Mutation() backend.MutationResolver { return &mutationResolver{r} }
 
