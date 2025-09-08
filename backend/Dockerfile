@@ -25,4 +25,4 @@ RUN CGO_ENABLED=0 go build -o /server ./cmd/server
 # データベースの準備完了を待ってからサーバーを起動する
 # ポート8080でリッスンしてコンテナ外からアクセス可能にする
 EXPOSE 8080
-CMD ["/wait-for-it.sh", "db:5432", "--", "/server"]
+CMD ["/wait-for-it.sh", "db:5432", "--timeout", "30", "--", "/server"]

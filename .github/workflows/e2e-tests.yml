@@ -64,8 +64,12 @@ jobs:
           sleep 30
           echo "Docker Composeの状況を確認:"
           docker compose ps
-          echo "Docker ログを確認:"
-          docker compose logs --tail=50
+          echo "フロントエンドコンテナのログ:"
+          docker compose logs frontend --tail=20
+          echo "バックエンドコンテナのログ:"
+          docker compose logs backend --tail=20
+          echo "データベースコンテナのログ:"
+          docker compose logs db --tail=10
         working-directory: ./
 
       # 6. アプリケーションのヘルスチェック
