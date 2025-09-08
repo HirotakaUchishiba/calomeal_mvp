@@ -4,17 +4,18 @@ import { FoodLogModal } from '../records/FoodLogModal';
 import { ExerciseLogModal } from '../records/ExerciseLogModal';
 import { DailySummaryNumbers } from '../../components/DailySummaryNumbers';
 import { PFCProgressBars } from '../../components/PFCProgressBars';
+import { DateNavigator } from '../../components/DateNavigator';
 import { GET_DAILY_SUMMARY_QUERY } from '../../graphql/queries';
 import { useAuth } from '../../contexts/AuthContext'; 
 
 export const DashboardPage = () => {
   const [isFoodModalOpen, setFoodModalOpen] = useState(false);
   const [isExerciseModalOpen, setExerciseModalOpen] = useState(false);
-  const today = new Date().toISOString().split('T')[0];
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   const { user, signOut } = useAuth();
   const { data, loading, error } = useQuery(GET_DAILY_SUMMARY_QUERY, {
-    variables: { date: today }
+    variables: { date: selectedDate }
   });
 
   const handleLogout = async () => {
@@ -61,6 +62,12 @@ export const DashboardPage = () => {
         </div>
       </div>
 
+      {/* 日付ナビゲーター */}
+      <DateNavigator 
+        selectedDate={selectedDate} 
+        onDateChange={setSelectedDate} 
+      />
+
       {/* サマリー表示エリア */}
       <DailySummaryNumbers summary={data.dailySummary} />
       <PFCProgressBars summary={data.dailySummary} />
@@ -72,8 +79,8 @@ export const DashboardPage = () => {
       </div>
 
       {/* モーダル */}
-      <FoodLogModal isOpen={isFoodModalOpen} onClose={() => setFoodModalOpen(false)} logDate={today} />
-      <ExerciseLogModal isOpen={isExerciseModalOpen} onClose={() => setExerciseModalOpen(false)} logDate={today} />
+      <FoodLogModal isOpen={isFoodModalOpen} onClose={() => setFoodModalOpen(false)} logDate={selectedDate} />
+      <ExerciseLogModal isOpen={isExerciseModalOpen} onClose={() => setExerciseModalOpen(false)} logDate={selectedDate} />
     </div>
   );
 };
