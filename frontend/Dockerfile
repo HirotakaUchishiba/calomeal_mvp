@@ -16,5 +16,8 @@ COPY frontend/ .
 # 5. 依存関係を再インストール（vite.config.tsが含まれるため）
 RUN npm install
 
-# 6. 開発サーバーを起動（ホスト0.0.0.0でリッスンしてコンテナ外からアクセス可能にする）
-CMD ["sh", "-c", "echo 'Starting Vite development server...' && npm run dev -- --host 0.0.0.0 --port 3000"]
+# 6. viteパッケージが正しくインストールされていることを確認
+RUN npx vite --version
+
+# 7. 開発サーバーを起動（ホスト0.0.0.0でリッスンしてコンテナ外からアクセス可能にする）
+CMD ["sh", "-c", "echo 'Starting Vite development server...' && npx vite --host 0.0.0.0 --port 3000"]
