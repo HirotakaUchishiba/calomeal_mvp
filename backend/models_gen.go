@@ -113,3 +113,10 @@ type UserProfileInput struct {
 	Weight        float64 `json:"weight"`
 	ActivityLevel string  `json:"activityLevel"`
 }
+
+// 体重記録を表す型
+type WeightLog struct {
+	ID       string  `json:"id"`
+	Weight   float64 `json:"weight"`
+	LoggedAt string  `json:"loggedAt"`
+}
