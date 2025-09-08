@@ -2,37 +2,36 @@
 
 ## 2.1. ハイレベルアーキテクチャ
 
-アーキテクチャは、React SPA、Go GraphQL BFF、Goサービス群から成る三層構造を維持します。この「関心の分離」は、将来の拡張性を見据えた上で有効です。
+アーキテクチャは、React/React Native クライアント、Go GraphQL BFF、ドメイン別マイクロサービス（gRPC）から成る構造です。GraphQL はクライアントとの公開契約、gRPC はサービス間契約として機能します。
 
-- **React SPA (Single Page Application)**: ユーザーが直接操作するフロントエンド。
-- **Go GraphQL BFF (Backend for Frontend)**: フロントエンドからのデータ取得要求に特化したAPIレイヤー。
-- **Goサービス群**: ビジネスロジックを担うバックエンドサービス。
+- **React SPA / React Native**: ユーザーが操作するクライアント。GraphQL 経由で BFF と通信。
+- **Go GraphQL BFF (Backend for Frontend)**: クライアントに最適化された API レイヤー。Resolver は gRPC クライアントとして各サービスを呼び出す。
+- **ドメイン別マイクロサービス（gRPC）**: `usersvc`, `foodsvc`, `logsvc`, `analytics` 等のサービスが gRPC で連携。
 
-## 2.2. 「構造化モノリス」戦略
+## 2.2. マイクロサービス + gRPC 戦略
 
-MVPのデプロイメント戦略として、複数の論理サービス（`fooddata`, `log`, `user`）を単一のコンテナにパッケージングする「**構造化モノリス**」アプローチを採用します。
-
-これにより、MVPフェーズにおける運用上の複雑性（サービス間通信、分散トレーシングなど）を大幅に削減できます。将来的に特定サービスの負荷が高まった場合、その部分だけを独立したマイクロサービスとして切り出すことが容易な、進化的な設計です。
+ドメイン境界を意識したサービス分割を行い、サービス間通信は gRPC を採用します。BFF は公開契約（GraphQL）を維持しつつ、内部実装は gRPC 経由で各サービスをオーケストレーションします。サービスディスカバリに AWS Cloud Map を用い、プライベートネットワーク内での安全な通信を確保します。
 
 ## 2.3. 技術スタックの最適化
 
-高レベルな技術選定は維持しつつ、MVPの実装速度を最大化するために内部の通信方式とデータ層の実装を簡素化します。
+サービス間契約を gRPC（Protocol Buffers）に統一し、スケーラブルで相互運用性の高い構成とします。
 
 | カテゴリ | 技術 | 根拠 |
 | :--- | :--- | :--- |
-| **フロントエンド** | React, TypeScript | 変更なし。モダンなSPA開発の標準。 |
-| **バックエンド言語** | Go | 変更なし。マイクロサービスに適した言語特性。 |
-| **APIレイヤー** | GraphQL (BFF) | 変更なし。フロントエンドのデータ取得を最適化。 |
-| **サービス間通信** | **Goインターフェースによる直接呼び出し** | **変更。**構造化モノリス内でのgRPC通信は不要なオーバーヘッド。直接的な関数呼び出しで実装を大幅に簡素化。 |
-| **データベース** | PostgreSQL (Amazon RDS) | 変更なし。信頼性の高いRDB。 |
-| **インフラストラクチャ** | AWS (ECS, Fargate, S3, ALB, VPC) | 変更なし。スケーラブルなクラウド基盤。 |
-| **認証基盤** | Amazon Cognito | 変更なし。セキュアな認証機能のマネージドサービス。 |
-| **Infrastructure as Code** | Terraform | 変更なし。インフラの再現性と一貫性を確保。 |
-| **CI/CD** | GitHub Actions | 変更なし。開発サイクルの自動化。 |
+| **フロントエンド** | React, TypeScript | モダンなSPA開発の標準。 |
+| **バックエンド言語** | Go | マイクロサービスに適した言語特性。 |
+| **APIレイヤー** | GraphQL (BFF) | フロントエンドのデータ取得を最適化。 |
+| **サービス間通信** | **gRPC (Protocol Buffers)** | 明確な契約と多言語互換性、パフォーマンス。 |
+| **データベース** | PostgreSQL (Amazon RDS) | 信頼性の高いRDB。 |
+| **インフラストラクチャ** | AWS (ECS Fargate, S3, ALB, VPC, Cloud Map) | サービスディスカバリに Cloud Map を使用。 |
+| **認証基盤** | Amazon Cognito | セキュアな認証機能のマネージドサービス。 |
+| **Infrastructure as Code** | Terraform | インフラの再現性と一貫性を確保。 |
+| **CI/CD** | GitHub Actions | 開発サイクルの自動化。 |
+| **観測性** | OpenTelemetry, CloudWatch Logs, X-Ray | 分散トレーシング/メトリクス/ログの統合。 |
 
 ## 2.4. プロジェクトディレクトリ構成
 
-以下は、本プロジェクトのルートディレクトリからの構成です。
+以下は、本プロジェクトのルートディレクトリからの構成例です（要点のみ）。
 
 ```plaintext
 .
@@ -52,7 +51,7 @@ MVPのデプロイメント戦略として、複数の論理サービス（`food
 │   │   │   └── resolvers/  # GraphQLリゾルバ
 │   │   └── service/        # ビジネスロジック層 (fooddata/, log/, user/)
 │   ├── go.mod
-│   └── schema.graphqls     # GraphQLスキーマ定義
+│   └── schema.graphql      # GraphQLスキーマ定義
 ├── frontend/
 │   ├── public/
 │   └── src/
@@ -63,5 +62,15 @@ MVPのデプロイメント戦略として、複数の論理サービス（`food
 │   └── modules/            # 再利用可能なインフラ構成要素 (ecs/, rds/, vpc/, etc.)
 ├── .env.example            # ローカル開発用の環境変数テンプレート
 ├── .gitignore
-└── docker-compose.yml      # ローカル開発環境定義
+├── proto/                  # gRPCの.proto定義（サービス間契約）
+├── services/               # マイクロサービス（将来的に分割配置）
+└── mobile/                 # React Native アプリ
+
+## 2.5. リクエストフロー（例）
+
+1. クライアント（Web/RN）が GraphQL にリクエスト
+2. BFF の Resolver が Cognito JWT を検証（`@auth` ディレクティブ）
+3. Resolver が対応する gRPC サービスにリクエスト（JWT 由来のユーザー情報をメタデータとして伝播）
+4. サービスが DB にアクセスし結果を返却
+5. BFF が GraphQL レスポンスとしてクライアントに返却
 ```
