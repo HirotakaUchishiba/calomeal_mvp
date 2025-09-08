@@ -1,8 +1,8 @@
 # 1. ベースとなるGo言語のイメージを選択
 FROM golang:1.25-alpine
 
-# bashをインストール（wait-for-it.shスクリプト用）
-RUN apk add --no-cache bash
+# bashとnetcatをインストール（wait-for-it.shスクリプト用）
+RUN apk add --no-cache bash netcat-openbsd
 
 # 2. コンテナ内の作業ディレクトリを指定
 WORKDIR /app
@@ -11,9 +11,7 @@ WORKDIR /app
 COPY backend/go.mod backend/go.sum ./
 RUN go mod tidy
 
-# 4. wait-for-itスクリプトをコピー
-COPY wait-for-it.sh /wait-for-it.sh
-RUN chmod +x /wait-for-it.sh
+# 4. wait-for-itスクリプトは不要（ncコマンドを使用）
 
 # 5. アプリケーションのソースコードをコピーする
 COPY backend/ .
@@ -28,4 +26,4 @@ RUN CGO_ENABLED=0 go build -o /server ./cmd/server
 # データベースの準備完了を待ってからサーバーを起動する
 # ポート8080でリッスンしてコンテナ外からアクセス可能にする
 EXPOSE 8080
-CMD ["/wait-for-it.sh", "db:5432", "--timeout", "30", "--", "/server"]
+CMD ["sh", "-c", "until nc -z db 5432; do echo 'Waiting for database...'; sleep 2; done; echo 'Database is ready!'; /server"]
