@@ -23,15 +23,15 @@ type LogFoodInput struct {
 	Carbohydrate float64
 	Fat          float64
 	Date         string
-  }
+}
 
-  type DailySummary struct {
-	CaloriesIntake  float64
-	CaloriesBurned  float64
-	Protein         float64
-	Carbohydrate    float64
-	Fat             float64
-  }
+type DailySummary struct {
+	CaloriesIntake float64
+	CaloriesBurned float64
+	Protein        float64
+	Carbohydrate   float64
+	Fat            float64
+}
 
 // FoodLogは食事記録を表します
 type FoodLog struct {
@@ -84,7 +84,7 @@ func (s *service) LogFood(ctx context.Context, userID string, in LogFoodInput) (
 		return 0, err
 	}
 	return id, nil
-	}
+}
 
 // LogExerciseは運動記録をデータベースに保存します
 func (s *service) LogExercise(ctx context.Context, userID string, in LogExerciseInput) (int64, error) {
