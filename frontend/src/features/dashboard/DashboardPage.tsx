@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { FoodLogModal } from '../records/FoodLogModal';
 import { ExerciseLogModal } from '../records/ExerciseLogModal';
+import { WeightLogModal } from '../records/WeightLogModal';
 import { DailySummaryNumbers } from '../../components/DailySummaryNumbers';
 import { PFCProgressBars } from '../../components/PFCProgressBars';
 import { DateNavigator } from '../../components/DateNavigator';
@@ -13,6 +14,7 @@ import { useAuth } from '../../contexts/AuthContext';
 export const DashboardPage = () => {
   const [isFoodModalOpen, setFoodModalOpen] = useState(false);
   const [isExerciseModalOpen, setExerciseModalOpen] = useState(false);
+  const [isWeightModalOpen, setWeightModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   const { user, signOut } = useAuth();
@@ -93,6 +95,13 @@ export const DashboardPage = () => {
             icon: '🏃',
             onClick: () => setExerciseModalOpen(true),
             color: '#2196F3'
+          },
+          {
+            id: 'weight',
+            label: '体重を記録',
+            icon: '📏',
+            onClick: () => setWeightModalOpen(true),
+            color: '#4CAF50'
           }
         ]}
         mainIcon="+"
@@ -102,6 +111,7 @@ export const DashboardPage = () => {
       {/* モーダル */}
       <FoodLogModal isOpen={isFoodModalOpen} onClose={() => setFoodModalOpen(false)} logDate={selectedDate} />
       <ExerciseLogModal isOpen={isExerciseModalOpen} onClose={() => setExerciseModalOpen(false)} logDate={selectedDate} />
+      <WeightLogModal isOpen={isWeightModalOpen} onClose={() => setWeightModalOpen(false)} logDate={selectedDate} />
     </div>
   );
 };

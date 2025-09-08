@@ -39,3 +39,13 @@ export const GET_EXERCISE_LOGS_QUERY = gql`
     }
   }
 `;
+
+export const LOG_WEIGHT_MUTATION = gql`
+  mutation LogWeight($weight: Float!, $date: String!) {
+    logWeight(weight: $weight, date: $date) {
+      id
+      weight
+      loggedAt
+    }
+  }
+`;
