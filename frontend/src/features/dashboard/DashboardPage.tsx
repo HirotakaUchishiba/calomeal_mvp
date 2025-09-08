@@ -6,6 +6,7 @@ import { DailySummaryNumbers } from '../../components/DailySummaryNumbers';
 import { PFCProgressBars } from '../../components/PFCProgressBars';
 import { DateNavigator } from '../../components/DateNavigator';
 import { FloatingActionButton } from '../../components/FloatingActionButton';
+import { LogList } from '../../components/LogList';
 import { GET_DAILY_SUMMARY_QUERY } from '../../graphql/queries';
 import { useAuth } from '../../contexts/AuthContext'; 
 
@@ -72,6 +73,9 @@ export const DashboardPage = () => {
       {/* サマリー表示エリア */}
       <DailySummaryNumbers summary={data.dailySummary} />
       <PFCProgressBars summary={data.dailySummary} />
+
+      {/* ログリスト */}
+      <LogList date={selectedDate} />
 
       {/* フローティングアクションボタン */}
       <FloatingActionButton
