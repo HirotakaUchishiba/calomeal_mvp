@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "07_Proactive_Mentoring_Guide.md",
+                "file": "08_Git_Rule_Guide.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "07_Proactive_Mentoring_Guide"
+              "title": "08_Git_Rule_Guide"
             }
           }
         ]
@@ -171,12 +171,12 @@
   },
   "active": "688093fd3c1ec77e",
   "lastOpenFiles": [
+    "07_Proactive_Mentoring_Guide.md",
     "06_AI_Driven_Development_Roadmap.md",
     "05_Infrastructure_and_DevOps.md",
     "04_Frontend_Design.md",
     "03_Backend_Design.md",
     "02_System_Architecture.md",
-    "01_Project_Charter_and_Scope.md",
-    "07_Proactive_Mentoring_Guide.md"
+    "01_Project_Charter_and_Scope.md"
   ]
 }
