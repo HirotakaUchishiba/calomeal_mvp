@@ -1,6 +1,9 @@
 # 1. ベースとなるGo言語のイメージを選択
 FROM golang:1.25-alpine
 
+# bashをインストール（wait-for-it.shスクリプト用）
+RUN apk add --no-cache bash
+
 # 2. コンテナ内の作業ディレクトリを指定
 WORKDIR /app
 
