@@ -22,8 +22,13 @@ services:
       - ./backend:/app
     depends_on:
       - db
-    env_file:
-      - ./.env
+    environment:
+      - DATABASE_URL=postgres://postgres:password@db:5432/calomeal?sslmode=disable
+      - JWT_SECRET=${JWT_SECRET:-test-jwt-secret-key}
+      - COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID:-test-pool-id}
+      - COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID:-test-client-id}
+      - COGNITO_REGION=${COGNITO_REGION:-us-east-1}
+      - GRAPHQL_ENDPOINT=${GRAPHQL_ENDPOINT:-http://localhost:8080/graphql}
 
   # 3. フロントエンド (React)
   frontend:

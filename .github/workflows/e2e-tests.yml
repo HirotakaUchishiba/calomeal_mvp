@@ -47,6 +47,15 @@ jobs:
       # 5. アプリケーションを起動
       - name: Start application
         run: |
+          # E2Eテスト用の環境変数を設定
+          cat > .env << EOF
+          DATABASE_URL=postgres://postgres:password@db:5432/calomeal?sslmode=disable
+          JWT_SECRET=test-jwt-secret-key-for-e2e-testing
+          COGNITO_USER_POOL_ID=test-pool-id
+          COGNITO_CLIENT_ID=test-client-id
+          COGNITO_REGION=us-east-1
+          GRAPHQL_ENDPOINT=http://localhost:8080/graphql
+          EOF
           docker compose up -d
           # アプリケーションの起動を待機
           sleep 30
