@@ -5,6 +5,7 @@ import { ExerciseLogModal } from '../records/ExerciseLogModal';
 import { DailySummaryNumbers } from '../../components/DailySummaryNumbers';
 import { PFCProgressBars } from '../../components/PFCProgressBars';
 import { DateNavigator } from '../../components/DateNavigator';
+import { FloatingActionButton } from '../../components/FloatingActionButton';
 import { GET_DAILY_SUMMARY_QUERY } from '../../graphql/queries';
 import { useAuth } from '../../contexts/AuthContext'; 
 
@@ -72,11 +73,27 @@ export const DashboardPage = () => {
       <DailySummaryNumbers summary={data.dailySummary} />
       <PFCProgressBars summary={data.dailySummary} />
 
-      {/* 記録ボタン */}
-      <div className="fab-container">
-        <button onClick={() => setFoodModalOpen(true)}>食事を記録</button>
-        <button onClick={() => setExerciseModalOpen(true)}>運動を記録</button>
-      </div>
+      {/* フローティングアクションボタン */}
+      <FloatingActionButton
+        actions={[
+          {
+            id: 'food',
+            label: '食事を記録',
+            icon: '🍽️',
+            onClick: () => setFoodModalOpen(true),
+            color: '#FF9800'
+          },
+          {
+            id: 'exercise',
+            label: '運動を記録',
+            icon: '🏃',
+            onClick: () => setExerciseModalOpen(true),
+            color: '#2196F3'
+          }
+        ]}
+        mainIcon="+"
+        mainColor="#4CAF50"
+      />
 
       {/* モーダル */}
       <FoodLogModal isOpen={isFoodModalOpen} onClose={() => setFoodModalOpen(false)} logDate={selectedDate} />
