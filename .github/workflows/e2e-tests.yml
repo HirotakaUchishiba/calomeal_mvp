@@ -109,14 +109,40 @@ jobs:
           docker compose logs --tail=100
           exit 1
 
-      # 7. E2Eテストを実行
+      # 7. E2Eテスト実行前の最終ヘルスチェック
+      - name: Final health check before E2E tests
+        run: |
+          echo "E2Eテスト実行前の最終ヘルスチェック..."
+          echo "現在のDocker Compose状況:"
+          docker compose ps
+          echo "フロントエンドの最終チェック..."
+          if curl -f http://localhost:3000; then
+            echo "✅ フロントエンドが応答しています"
+          else
+            echo "❌ フロントエンドが応答していません"
+            echo "フロントエンドコンテナのログ:"
+            docker compose logs frontend --tail=20
+            exit 1
+          fi
+          echo "バックエンドの最終チェック..."
+          if curl -f http://localhost:8080/health; then
+            echo "✅ バックエンドが応答しています"
+          else
+            echo "❌ バックエンドが応答していません"
+            echo "バックエンドコンテナのログ:"
+            docker compose logs backend --tail=20
+            exit 1
+          fi
+          echo "✅ アプリケーションが正常に動作しています"
+
+      # 8. E2Eテストを実行
       - name: Run E2E tests
         run: npx playwright test --project=${{ matrix.browser }}
         working-directory: ./
         env:
           CI: true
 
-      # 8. テスト結果のレポートをアップロード
+      # 9. テスト結果のレポートをアップロード
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
@@ -125,7 +151,7 @@ jobs:
           path: playwright-report/
           retention-days: 30
 
-      # 9. テスト失敗時のスクリーンショットをアップロード
+      # 10. テスト失敗時のスクリーンショットをアップロード
       - name: Upload screenshots
         uses: actions/upload-artifact@v4
         if: failure()
@@ -134,7 +160,7 @@ jobs:
           path: test-results/
           retention-days: 30
 
-      # 10. アプリケーションの停止
+      # 11. アプリケーションの停止
       - name: Stop application
         if: always()
         run: |
