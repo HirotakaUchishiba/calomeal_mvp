@@ -17,4 +17,4 @@ COPY frontend/ .
 RUN npm install
 
 # 6. 開発サーバーを起動（ホスト0.0.0.0でリッスンしてコンテナ外からアクセス可能にする）
-CMD ["sh", "-c", "echo 'Starting Vite development server...' && npx vite --host 0.0.0.0 --port 3000"]
+CMD ["sh", "-c", "echo 'Starting Vite development server...' && npm run dev -- --host 0.0.0.0 --port 3000"]
