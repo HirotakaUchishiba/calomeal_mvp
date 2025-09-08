@@ -35,33 +35,48 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
-          npx playwright install --with-deps ${{ matrix.browser }}
         working-directory: ./
 
-      # 4. アプリケーションを起動
+      # 4. Playwrightブラウザをインストール
+      - name: Install Playwright browsers
+        run: |
+          npx playwright install --with-deps ${{ matrix.browser }}
+        timeout-minutes: 10
+        working-directory: ./
+
+      # 5. アプリケーションを起動
       - name: Start application
         run: |
-          docker-compose up -d
+          docker compose up -d
           # アプリケーションの起動を待機
           sleep 30
         working-directory: ./
 
-      # 5. アプリケーションのヘルスチェック
+      # 6. アプリケーションのヘルスチェック
       - name: Health check
         run: |
-          # フロントエンドのヘルスチェック
-          curl -f http://localhost:3000 || exit 1
-          # バックエンドのヘルスチェック
-          curl -f http://localhost:8080/health || exit 1
+          echo "アプリケーションの起動を待機中..."
+          # 最大60秒間、10秒間隔でヘルスチェック
+          for i in {1..6}; do
+            echo "ヘルスチェック試行 $i/6"
+            if curl -f http://localhost:3000 && curl -f http://localhost:8080/health; then
+              echo "アプリケーションが正常に起動しました"
+              exit 0
+            fi
+            echo "アプリケーションの起動を待機中... (10秒後再試行)"
+            sleep 10
+          done
+          echo "アプリケーションの起動に失敗しました"
+          exit 1
 
-      # 6. E2Eテストを実行
+      # 7. E2Eテストを実行
       - name: Run E2E tests
         run: npx playwright test --project=${{ matrix.browser }}
         working-directory: ./
         env:
           CI: true
 
-      # 7. テスト結果のレポートをアップロード
+      # 8. テスト結果のレポートをアップロード
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
@@ -70,7 +85,7 @@ jobs:
           path: playwright-report/
           retention-days: 30
 
-      # 8. テスト失敗時のスクリーンショットをアップロード
+      # 9. テスト失敗時のスクリーンショットをアップロード
       - name: Upload screenshots
         uses: actions/upload-artifact@v4
         if: failure()
@@ -78,6 +93,13 @@ jobs:
           name: screenshots-${{ matrix.browser }}
           path: test-results/
           retention-days: 30
+
+      # 10. アプリケーションの停止
+      - name: Stop application
+        if: always()
+        run: |
+          docker compose down
+        working-directory: ./
 
   # テスト結果のサマリー
   test-summary:
@@ -87,7 +109,16 @@ jobs:
     steps:
       - name: Test Summary
         run: |
-          echo "## E2Eテスト結果" >> $GITHUB_STEP_SUMMARY
-          echo "- Chromium: ${{ needs.e2e-tests.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Firefox: ${{ needs.e2e-tests.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- WebKit: ${{ needs.e2e-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "## 🧪 E2Eテスト結果" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| ブラウザ | 結果 |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Chromium | ${{ needs.e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Firefox | ${{ needs.e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| WebKit | ${{ needs.e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.e2e-tests.result }}" = "success" ]; then
+            echo "✅ すべてのテストが成功しました！" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ テストが失敗しました。詳細はログを確認してください。" >> $GITHUB_STEP_SUMMARY
+          fi
