@@ -13,7 +13,7 @@ RUN npm install
 # 4. アプリケーションのソースコードをコピー
 COPY frontend/ .
 
-# 5. 依存関係を再インストール（vite.config.tsが含まれるため）
+# 5. 依存関係を再インストール
 RUN npm install
 
 # 6. viteパッケージが正しくインストールされていることを確認

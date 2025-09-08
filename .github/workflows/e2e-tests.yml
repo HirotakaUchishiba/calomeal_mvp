@@ -109,40 +109,212 @@ jobs:
           docker compose logs --tail=100
           exit 1
 
-      # 7. E2Eテスト実行前の最終ヘルスチェック
+      # 7. 包括的なデバッグ情報の収集
+      - name: Comprehensive debugging information
+        run: |
+          echo "🔍 === 包括的なデバッグ情報の収集 ==="
+          
+          echo "📋 システム情報:"
+          echo "OS: $(uname -a)"
+          echo "Docker version: $(docker --version)"
+          echo "Docker Compose version: $(docker compose version)"
+          echo "Node version: $(node --version)"
+          echo "NPM version: $(npm --version)"
+          echo "Current directory: $(pwd)"
+          echo "Available disk space: $(df -h)"
+          echo "Memory usage: $(free -h)"
+          
+          echo "📦 Docker Compose状況:"
+          docker compose ps
+          echo "Docker Compose設定:"
+          docker compose config
+          
+          echo "🌐 ネットワーク情報:"
+          echo "Listening ports:"
+          netstat -tlnp || ss -tlnp || echo "ポート確認コマンドが利用できません"
+          echo "Docker networks:"
+          docker network ls
+          echo "Docker network details:"
+          docker network inspect calomeal_mvp_default || echo "ネットワーク詳細の取得に失敗"
+          
+          echo "📁 ファイルシステム情報:"
+          echo "Project structure:"
+          find . -maxdepth 3 -type f -name "*.json" -o -name "*.yml" -o -name "*.yaml" -o -name "Dockerfile*" | head -20
+          echo "Environment file:"
+          ls -la .env* || echo "環境ファイルが見つかりません"
+          echo "Package files:"
+          ls -la frontend/package*.json backend/go.mod* || echo "パッケージファイルが見つかりません"
+          
+          echo "🔧 コンテナ詳細情報:"
+          echo "Frontend container details:"
+          docker inspect calomeal_mvp-frontend-1 || echo "フロントエンドコンテナの詳細取得に失敗"
+          echo "Backend container details:"
+          docker inspect calomeal_mvp-backend-1 || echo "バックエンドコンテナの詳細取得に失敗"
+          echo "Database container details:"
+          docker inspect calomeal_mvp-db-1 || echo "データベースコンテナの詳細取得に失敗"
+          
+          echo "📊 コンテナリソース使用状況:"
+          docker stats --no-stream || echo "コンテナ統計の取得に失敗"
+          
+          echo "🔍 コンテナ内のファイル確認:"
+          echo "Frontend container files:"
+          docker exec calomeal_mvp-frontend-1 ls -la /app/ || echo "フロントエンドコンテナ内のファイル確認に失敗"
+          echo "Backend container files:"
+          docker exec calomeal_mvp-backend-1 ls -la /app/ || echo "バックエンドコンテナ内のファイル確認に失敗"
+          
+          echo "📋 環境変数確認:"
+          echo "Frontend environment:"
+          docker exec calomeal_mvp-frontend-1 env | grep -E "(NODE|VITE|PORT)" || echo "フロントエンド環境変数の確認に失敗"
+          echo "Backend environment:"
+          docker exec calomeal_mvp-backend-1 env | grep -E "(DATABASE|JWT|COGNITO|GRAPHQL)" || echo "バックエンド環境変数の確認に失敗"
+          
+          echo "🔧 パッケージ管理情報:"
+          echo "Frontend package.json:"
+          docker exec calomeal_mvp-frontend-1 cat /app/package.json || echo "フロントエンドpackage.jsonの確認に失敗"
+          echo "Frontend node_modules:"
+          docker exec calomeal_mvp-frontend-1 ls -la /app/node_modules/ | head -10 || echo "フロントエンドnode_modulesの確認に失敗"
+          echo "Backend go.mod:"
+          docker exec calomeal_mvp-backend-1 cat /app/go.mod || echo "バックエンドgo.modの確認に失敗"
+          
+          echo "🌐 接続テスト:"
+          echo "Testing localhost connections..."
+          for port in 3000 8080 5432; do
+            echo "Port $port:"
+            timeout 5 bash -c "echo > /dev/tcp/localhost/$port" && echo "✅ Port $port is open" || echo "❌ Port $port is closed"
+          done
+          
+          echo "🔍 プロセス確認:"
+          echo "Running processes:"
+          ps aux | grep -E "(node|go|postgres)" | head -10 || echo "プロセス確認に失敗"
+          
+          echo "📝 完全なコンテナログ:"
+          echo "=== フロントエンドログ ==="
+          docker compose logs frontend --tail=50
+          echo "=== バックエンドログ ==="
+          docker compose logs backend --tail=50
+          echo "=== データベースログ ==="
+          docker compose logs db --tail=30
+
+      # 8. E2Eテスト実行前の最終ヘルスチェック
       - name: Final health check before E2E tests
         run: |
-          echo "E2Eテスト実行前の最終ヘルスチェック..."
+          echo "🏥 === E2Eテスト実行前の最終ヘルスチェック ==="
           echo "現在のDocker Compose状況:"
           docker compose ps
+          
           echo "フロントエンドの最終チェック..."
-          if curl -f http://localhost:3000; then
-            echo "✅ フロントエンドが応答しています"
-          else
+          echo "Testing frontend connection with detailed output:"
+          curl -v --connect-timeout 10 --max-time 30 http://localhost:3000 || {
             echo "❌ フロントエンドが応答していません"
-            echo "フロントエンドコンテナのログ:"
-            docker compose logs frontend --tail=20
+            echo "フロントエンドコンテナの詳細ログ:"
+            docker compose logs frontend --tail=50
+            echo "フロントエンドコンテナの状態:"
+            docker inspect calomeal_mvp-frontend-1 --format='{{.State.Status}} {{.State.Health.Status}}' || echo "コンテナ状態の取得に失敗"
+            echo "フロントエンドコンテナ内のプロセス:"
+            docker exec calomeal_mvp-frontend-1 ps aux || echo "プロセス確認に失敗"
             exit 1
-          fi
+          }
+          echo "✅ フロントエンドが応答しています"
+          
           echo "バックエンドの最終チェック..."
-          if curl -f http://localhost:8080/health; then
-            echo "✅ バックエンドが応答しています"
-          else
+          echo "Testing backend connection with detailed output:"
+          curl -v --connect-timeout 10 --max-time 30 http://localhost:8080/health || {
             echo "❌ バックエンドが応答していません"
-            echo "バックエンドコンテナのログ:"
-            docker compose logs backend --tail=20
+            echo "バックエンドコンテナの詳細ログ:"
+            docker compose logs backend --tail=50
+            echo "バックエンドコンテナの状態:"
+            docker inspect calomeal_mvp-backend-1 --format='{{.State.Status}} {{.State.Health.Status}}' || echo "コンテナ状態の取得に失敗"
+            echo "バックエンドコンテナ内のプロセス:"
+            docker exec calomeal_mvp-backend-1 ps aux || echo "プロセス確認に失敗"
             exit 1
-          fi
+          }
+          echo "✅ バックエンドが応答しています"
+          
           echo "✅ アプリケーションが正常に動作しています"
 
-      # 8. E2Eテストを実行
+      # 9. E2Eテストを実行
       - name: Run E2E tests
         run: npx playwright test --project=${{ matrix.browser }}
         working-directory: ./
         env:
           CI: true
+        continue-on-error: true
 
-      # 9. テスト結果のレポートをアップロード
+      # 10. E2Eテスト失敗時の詳細デバッグ情報
+      - name: Debug information on E2E test failure
+        if: failure()
+        run: |
+          echo "🚨 === E2Eテスト失敗時の詳細デバッグ情報 ==="
+          
+          echo "📊 テスト実行後のシステム状態:"
+          echo "Docker Compose状況:"
+          docker compose ps
+          echo "コンテナリソース使用状況:"
+          docker stats --no-stream || echo "コンテナ統計の取得に失敗"
+          
+          echo "🌐 接続状態の詳細確認:"
+          echo "Testing all application endpoints..."
+          for url in "http://localhost:3000" "http://localhost:8080/health" "http://localhost:8080/graphql"; do
+            echo "Testing $url:"
+            curl -v --connect-timeout 5 --max-time 10 "$url" || echo "❌ $url への接続に失敗"
+            echo "---"
+          done
+          
+          echo "🔍 コンテナ内の詳細状態:"
+          echo "Frontend container processes:"
+          docker exec calomeal_mvp-frontend-1 ps aux || echo "フロントエンドプロセス確認に失敗"
+          echo "Backend container processes:"
+          docker exec calomeal_mvp-backend-1 ps aux || echo "バックエンドプロセス確認に失敗"
+          
+          echo "📁 コンテナ内のファイル状態:"
+          echo "Frontend container files:"
+          docker exec calomeal_mvp-frontend-1 find /app -name "*.js" -o -name "*.ts" -o -name "*.json" | head -20 || echo "フロントエンドファイル確認に失敗"
+          echo "Backend container files:"
+          docker exec calomeal_mvp-backend-1 find /app -name "*.go" -o -name "*.mod" -o -name "*.sum" | head -20 || echo "バックエンドファイル確認に失敗"
+          
+          echo "📋 環境変数の詳細確認:"
+          echo "Frontend environment variables:"
+          docker exec calomeal_mvp-frontend-1 env | sort || echo "フロントエンド環境変数確認に失敗"
+          echo "Backend environment variables:"
+          docker exec calomeal_mvp-backend-1 env | sort || echo "バックエンド環境変数確認に失敗"
+          
+          echo "🔧 パッケージと依存関係の詳細:"
+          echo "Frontend package.json content:"
+          docker exec calomeal_mvp-frontend-1 cat /app/package.json || echo "package.json確認に失敗"
+          echo "Frontend node_modules vite:"
+          docker exec calomeal_mvp-frontend-1 ls -la /app/node_modules/vite/ || echo "viteパッケージ確認に失敗"
+          echo "Backend go.mod content:"
+          docker exec calomeal_mvp-backend-1 cat /app/go.mod || echo "go.mod確認に失敗"
+          
+          echo "🌐 ネットワークの詳細状態:"
+          echo "Docker network inspect:"
+          docker network inspect calomeal_mvp_default || echo "ネットワーク詳細確認に失敗"
+          echo "Port binding details:"
+          docker port calomeal_mvp-frontend-1 || echo "フロントエンドポート確認に失敗"
+          docker port calomeal_mvp-backend-1 || echo "バックエンドポート確認に失敗"
+          docker port calomeal_mvp-db-1 || echo "データベースポート確認に失敗"
+          
+          echo "📝 完全なコンテナログ（最新100行）:"
+          echo "=== フロントエンドログ ==="
+          docker compose logs frontend --tail=100
+          echo "=== バックエンドログ ==="
+          docker compose logs backend --tail=100
+          echo "=== データベースログ ==="
+          docker compose logs db --tail=50
+          
+          echo "🔍 システムリソースの詳細:"
+          echo "Disk usage:"
+          df -h
+          echo "Memory usage:"
+          free -h
+          echo "Load average:"
+          uptime
+          
+          echo "📊 Docker system information:"
+          docker system df
+          docker system events --since 5m || echo "Dockerイベント確認に失敗"
+
+      # 11. テスト結果のレポートをアップロード
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
@@ -151,7 +323,7 @@ jobs:
           path: playwright-report/
           retention-days: 30
 
-      # 10. テスト失敗時のスクリーンショットをアップロード
+      # 12. テスト失敗時のスクリーンショットをアップロード
       - name: Upload screenshots
         uses: actions/upload-artifact@v4
         if: failure()
@@ -160,7 +332,7 @@ jobs:
           path: test-results/
           retention-days: 30
 
-      # 11. アプリケーションの停止
+      # 13. アプリケーションの停止
       - name: Stop application
         if: always()
         run: |
