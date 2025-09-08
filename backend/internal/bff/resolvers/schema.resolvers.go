@@ -282,6 +282,31 @@ func (r *mutationResolver) LogExercise(ctx context.Context, input backend.LogExe
 	}, nil
 }
 
+// LogWeight is the resolver for the logWeight field.
+func (r *mutationResolver) LogWeight(ctx context.Context, weight float64, date string) (*backend.WeightLog, error) {
+	// TODO: コンテキストから実際のユーザーIDを取得
+	userID := "550e8400-e29b-41d4-a716-446655440000"
+
+	// 入力型をサービス層の型に変換
+	serviceInput := log.LogWeightInput{
+		Weight: weight,
+		Date:   date,
+	}
+
+	// LogServiceを呼び出す
+	logID, err := r.Resolver.LogService.LogWeight(ctx, userID, serviceInput)
+	if err != nil {
+		return nil, err
+	}
+
+	// 成功レスポンスを返す
+	return &backend.WeightLog{
+		ID:       fmt.Sprintf("%d", logID),
+		Weight:   weight,
+		LoggedAt: date,
+	}, nil
+}
+
 // SearchFood is the resolver for the searchFood field.
 func (r *queryResolver) SearchFood(ctx context.Context, query string) ([]*backend.Food, error) {
 	// FoodDataServiceを呼び出す

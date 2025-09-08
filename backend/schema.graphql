@@ -46,6 +46,9 @@ type Mutation {
 
   "運動を記録します (消費カロリーは手動入力)"
   logExercise(input: LogExerciseInput!): ExerciseLog! @auth
+
+  "体重を記録します"
+  logWeight(weight: Float!, date: String!): WeightLog! @auth
 }
 
 type User {
@@ -100,6 +103,13 @@ type ExerciseLog {
   exerciseName: String!
   durationMinutes: Int!
   caloriesBurned: Float!
+  loggedAt: String!
+}
+
+"体重記録を表す型"
+type WeightLog {
+  id: ID!
+  weight: Float!
   loggedAt: String!
 }
 

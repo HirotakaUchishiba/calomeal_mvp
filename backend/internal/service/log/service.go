@@ -55,10 +55,24 @@ type ExerciseLog struct {
 	LoggedAt        string
 }
 
+// LogWeightInputは体重記録の入力です
+type LogWeightInput struct {
+	Weight float64
+	Date   string
+}
+
+// WeightLogは体重記録を表します
+type WeightLog struct {
+	ID       int64
+	Weight   float64
+	LoggedAt string
+}
+
 // Serviceは記録関連のビジネスロジックのインターフェースです
 type Service interface {
 	LogExercise(ctx context.Context, userID string, input LogExerciseInput) (int64, error)
 	LogFood(ctx context.Context, userID string, input LogFoodInput) (int64, error)
+	LogWeight(ctx context.Context, userID string, input LogWeightInput) (int64, error)
 	GetDailySummary(ctx context.Context, userID, date string) (DailySummary, error)
 	GetFoodLogs(ctx context.Context, userID, date string) ([]FoodLog, error)
 	GetExerciseLogs(ctx context.Context, userID, date string) ([]ExerciseLog, error)
@@ -179,6 +193,20 @@ func (s *service) GetFoodLogs(ctx context.Context, userID, date string) ([]FoodL
 	return logs, nil
 }
 
+// LogWeightは体重記録をデータベースに保存します
+func (s *service) LogWeight(ctx context.Context, userID string, in LogWeightInput) (int64, error) {
+	const q = `
+		INSERT INTO weight_logs (user_id, weight, logged_at)
+		VALUES ($1, $2, $3)
+		RETURNING id
+	`
+	var id int64
+	if err := s.db.QueryRowContext(ctx, q, userID, in.Weight, in.Date).Scan(&id); err != nil {
+		return 0, err
+	}
+	return id, nil
+}
+
 // GetExerciseLogsは指定された日付の運動記録を取得します
 func (s *service) GetExerciseLogs(ctx context.Context, userID, date string) ([]ExerciseLog, error) {
 	const q = `
@@ -215,4 +243,18 @@ func (s *service) GetExerciseLogs(ctx context.Context, userID, date string) ([]E
 	}
 
 	return logs, nil
+}
+
+// LogWeightは体重記録をデータベースに保存します
+func (s *service) LogWeight(ctx context.Context, userID string, in LogWeightInput) (int64, error) {
+	const q = `
+		INSERT INTO weight_logs (user_id, weight, logged_at)
+		VALUES ($1, $2, $3)
+		RETURNING id
+	`
+	var id int64
+	if err := s.db.QueryRowContext(ctx, q, userID, in.Weight, in.Date).Scan(&id); err != nil {
+		return 0, err
+	}
+	return id, nil
 }
