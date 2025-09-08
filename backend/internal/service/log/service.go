@@ -23,15 +23,15 @@ type LogFoodInput struct {
 	Carbohydrate float64
 	Fat          float64
 	Date         string
-}
+  }
 
-type DailySummary struct {
-	CaloriesIntake float64
-	CaloriesBurned float64
-	Protein        float64
-	Carbohydrate   float64
-	Fat            float64
-}
+  type DailySummary struct {
+	CaloriesIntake  float64
+	CaloriesBurned  float64
+	Protein         float64
+	Carbohydrate    float64
+	Fat             float64
+  }
 
 // FoodLogは食事記録を表します
 type FoodLog struct {
@@ -98,7 +98,7 @@ func (s *service) LogFood(ctx context.Context, userID string, in LogFoodInput) (
 		return 0, err
 	}
 	return id, nil
-}
+	}
 
 // LogExerciseは運動記録をデータベースに保存します
 func (s *service) LogExercise(ctx context.Context, userID string, in LogExerciseInput) (int64, error) {
@@ -243,18 +243,4 @@ func (s *service) GetExerciseLogs(ctx context.Context, userID, date string) ([]E
 	}
 
 	return logs, nil
-}
-
-// LogWeightは体重記録をデータベースに保存します
-func (s *service) LogWeight(ctx context.Context, userID string, in LogWeightInput) (int64, error) {
-	const q = `
-		INSERT INTO weight_logs (user_id, weight, logged_at)
-		VALUES ($1, $2, $3)
-		RETURNING id
-	`
-	var id int64
-	if err := s.db.QueryRowContext(ctx, q, userID, in.Weight, in.Date).Scan(&id); err != nil {
-		return 0, err
-	}
-	return id, nil
 }
