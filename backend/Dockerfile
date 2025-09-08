@@ -9,7 +9,7 @@ COPY go.mod go.sum ./
 RUN go mod tidy
 
 # 4. wait-for-itスクリプトをコピー
-COPY ../wait-for-it.sh /wait-for-it.sh
+COPY wait-for-it.sh /wait-for-it.sh
 RUN chmod +x /wait-for-it.sh
 
 # 5. アプリケーションのソースコードをコピーする
