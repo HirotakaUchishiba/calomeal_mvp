@@ -1,0 +1,18 @@
+name: Phase 0 - 基盤の安定化
+description: ローカル起動、E2E、最小観測性（traceId）
+title: "phase0: 基盤の安定化"
+labels: [phase0]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        目的: ローカルでE2Eを安定実行し、BFFに最小の構造化ログ（traceId）を追加する。
+  - type: checklist
+    attributes:
+      label: 受け入れ基準
+      options:
+        - label: docker-composeで起動し、E2Eが緑
+          required: true
+        - label: BFFログにtraceIdが出力される
+          required: true
+

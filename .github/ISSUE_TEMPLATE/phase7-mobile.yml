@@ -1,0 +1,18 @@
+name: Phase 7 - React Native 最小アプリ
+description: Expo + Amplify + Apollo、dailySummary 表示
+title: "phase7: RN最小アプリ"
+labels: [phase7]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        目的: Expo（TypeScript）で最小アプリを作成し、Cognito 認証後に GraphQL の dailySummary を表示する。
+  - type: checklist
+    attributes:
+      label: 受け入れ基準
+      options:
+        - label: サインイン→ダッシュボード表示
+          required: true
+        - label: dailySummary の数値が表示される
+          required: true
+

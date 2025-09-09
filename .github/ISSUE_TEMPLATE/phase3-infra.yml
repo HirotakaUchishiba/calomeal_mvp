@@ -1,0 +1,18 @@
+name: Phase 3 - インフラ dev デプロイ
+description: ECS/ECR/Cloud Map、CIマトリクス
+title: "phase3: devデプロイ基盤"
+labels: [phase3]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        目的: BFF と foodsvc を dev 環境にデプロイし、Cloud Map 経由で疎通させる。
+  - type: checklist
+    attributes:
+      label: 受け入れ基準
+      options:
+        - label: ALB 経由で BFF にアクセスできる
+          required: true
+        - label: BFF→foodsvc の gRPC が成功
+          required: true
+

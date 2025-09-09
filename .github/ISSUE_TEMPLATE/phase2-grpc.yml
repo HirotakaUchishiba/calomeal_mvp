@@ -1,0 +1,18 @@
+name: Phase 2 - gRPC導入（最小）
+description: Proto、最小サービス、BFF差し替え
+title: "phase2: gRPC最小導入"
+labels: [phase2]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        目的: foods.v1.SearchFoods を .proto で定義し、最小サーバとBFFクライアントを実装する。
+  - type: checklist
+    attributes:
+      label: 受け入れ基準
+      options:
+        - label: .proto が存在し、コード生成が通る
+          required: true
+        - label: BFF の searchFood が gRPC 経由で成功
+          required: true
+

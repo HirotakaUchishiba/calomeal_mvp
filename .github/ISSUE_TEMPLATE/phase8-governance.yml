@@ -1,0 +1,18 @@
+name: Phase 8 - ガバナンス/品質
+description: 契約互換性ゲート、SAST、Secrets運用
+title: "phase8: ガバナンス/品質の整備"
+labels: [phase8]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        目的: GraphQL/Proto の互換性チェックをCIでブロックし、基本のSASTとSecrets運用を整備する。
+  - type: checklist
+    attributes:
+      label: 受け入れ基準
+      options:
+        - label: 非互換PRがCIで検出/ブロックされる
+          required: true
+        - label: SAST がCIで実行される
+          required: true
+
