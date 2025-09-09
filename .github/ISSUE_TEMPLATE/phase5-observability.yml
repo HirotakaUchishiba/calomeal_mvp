@@ -1,0 +1,18 @@
+name: Phase 5 - 観測性・信頼性
+description: Otel/CloudWatch/X-Ray、タイムアウト/リトライ
+title: "phase5: 観測性/信頼性の基礎"
+labels: [phase5]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        目的: OpenTelemetry と CloudWatch/X-Ray で可観測化し、クライアントのデッドラインと限定リトライを実装する。
+  - type: checklist
+    attributes:
+      label: 受け入れ基準
+      options:
+        - label: p95 レイテンシが可視
+          required: true
+        - label: トレースでリクエスト経路を追跡可能
+          required: true
+

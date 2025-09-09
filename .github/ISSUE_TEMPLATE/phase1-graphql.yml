@@ -1,0 +1,18 @@
+name: Phase 1 - 契約の固定化（GraphQL）
+description: スキーマ唯一化、型生成、互換性ルール
+title: "phase1: GraphQL契約の固定化"
+labels: [phase1]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        目的: GraphQLスキーマを唯一の真実源とし、型生成と互換性チェックをパイプラインに組み込む。
+  - type: checklist
+    attributes:
+      label: 受け入れ基準
+      options:
+        - label: スキーマ変更時に型生成がCIで実行される
+          required: true
+        - label: 互換性ポリシーに違反する変更がPRで検出される
+          required: true
+

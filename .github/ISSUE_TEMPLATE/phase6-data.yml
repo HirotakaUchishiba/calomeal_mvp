@@ -1,0 +1,18 @@
+name: Phase 6 - データ責務と移行
+description: 所有権明文化、分離ロードマップ
+title: "phase6: データ責務/移行計画"
+labels: [phase6]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        目的: テーブルの所有権をサービス単位で明文化し、将来のスキーマ分離計画を策定する。
+  - type: checklist
+    attributes:
+      label: 受け入れ基準
+      options:
+        - label: 所有マッピング文書がある
+          required: true
+        - label: 分離/移行手順（ローリング/ロールバック）が定義されている
+          required: true
+

@@ -1,0 +1,18 @@
+name: Phase 4 - サービス拡張（logsvc/analytics）
+description: 2サービス抽出、BFFをgRPC化、JWTメタデータ
+title: "phase4: logsvc/analytics 抽出"
+labels: [phase4]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        目的: logs.v1 / analytics.v1 を抽出し、BFF から gRPC で呼び出す。JWT メタデータを標準化する。
+  - type: checklist
+    attributes:
+      label: 受け入れ基準
+      options:
+        - label: 既存E2Eが緑のまま
+          required: true
+        - label: 代表メソッドのコントラクトテスト追加
+          required: true
+
