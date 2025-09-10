@@ -1,5 +1,3 @@
-import React from 'react';
-
 type Props = {
   selectedDate: string;
   onDateChange: (date: string) => void;
@@ -10,7 +8,7 @@ export const DateNavigator = ({ selectedDate, onDateChange }: Props) => {
   const selected = new Date(selectedDate);
   
   // 日付の差分を計算
-  const diffDays = Math.floor((selected.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  //const diffDays = Math.floor((selected.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   
   // 日付の表示名を取得
   const getDateLabel = (date: Date) => {

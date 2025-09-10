@@ -59,12 +59,15 @@ export const useAuthActions = () => {
       if (import.meta.env.DEV) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         return {
-          userSub: 'dev-user-sub',
-          userConfirmed: false,
-          codeDeliveryDetails: {
-            destination: input.email,
-            deliveryMedium: 'EMAIL',
-            attributeName: 'email',
+          isSignUpComplete: false,
+          userId: 'dev-user-sub',
+          nextStep: {
+            signUpStep: 'CONFIRM_SIGN_UP',
+            codeDeliveryDetails: {
+              destination: input.email,
+              deliveryMedium: 'EMAIL',
+              attributeName: 'email',
+            },
           },
         };
       }
