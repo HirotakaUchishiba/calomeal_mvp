@@ -45,3 +45,7 @@ build/
 coverage/
 *.cover
 *.out
+
+# Playwright test results
+test-results/
+playwright-report/
