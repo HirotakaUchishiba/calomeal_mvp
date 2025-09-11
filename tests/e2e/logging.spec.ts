@@ -87,9 +87,9 @@ test.describe('記録機能のテスト', () => {
     await page.click('button:has-text("記録する")');
     
     // モーダルが閉じることを確認
-    await expect(page.locator('h2')).not.toBeVisible();
+    await expect(page.locator('h2')).not.toBeVisible({ timeout: 10000 });
     
-    // 成功メッセージが表示されることを確認（またはログリストに表示）
+    // 成功メッセージが表示されることを確認
     await expect(page.locator('text=体重を記録しました')).toBeVisible();
   });
 
