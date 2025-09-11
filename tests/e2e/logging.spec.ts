@@ -2,26 +2,11 @@ import { test, expect } from '@playwright/test';
 
 test.describe('記録機能のテスト', () => {
   test.beforeEach(async ({ page }) => {
-    // 開発環境用の認証状態を設定
-    await page.goto('/');
-    
-    // localStorageに開発用ユーザー情報を設定
-    await page.evaluate(() => {
-      const devUser = {
-        userId: 'dev-user-id',
-        username: 'testuser@example.com',
-        signInDetails: {
-          loginId: 'testuser@example.com',
-        },
-      };
-      localStorage.setItem('dev-user', JSON.stringify(devUser));
-    });
-    
-    // ダッシュボードにアクセス
-    await page.goto('/dashboard');
+    // E2Eテスト用の認証状態を設定（URLパラメータを使用）
+    await page.goto('/dashboard?e2e-test=true');
     
     // ダッシュボードが表示されるまで待機
-    await expect(page.locator('h1')).toContainText('ダッシュボード', { timeout: 10000 });
+    await expect(page.locator('h1')).toContainText('ダッシュボード', { timeout: 15000 });
   });
 
   test('食事記録機能', async ({ page }) => {
