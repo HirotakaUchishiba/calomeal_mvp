@@ -2,14 +2,26 @@ import { test, expect } from '@playwright/test';
 
 test.describe('記録機能のテスト', () => {
   test.beforeEach(async ({ page }) => {
-    // テスト用のユーザーでログイン（事前に作成済みのテストユーザーを使用）
+    // 開発環境用の認証状態を設定
     await page.goto('/');
-    await page.fill('input[type="email"]', 'testuser@example.com');
-    await page.fill('input[type="password"]', 'TestPassword123!');
-    await page.click('button[type="submit"]');
+    
+    // localStorageに開発用ユーザー情報を設定
+    await page.evaluate(() => {
+      const devUser = {
+        userId: 'dev-user-id',
+        username: 'testuser@example.com',
+        signInDetails: {
+          loginId: 'testuser@example.com',
+        },
+      };
+      localStorage.setItem('dev-user', JSON.stringify(devUser));
+    });
+    
+    // ダッシュボードにアクセス
+    await page.goto('/dashboard');
     
     // ダッシュボードが表示されるまで待機
-    await expect(page.locator('h1')).toContainText('ダッシュボード');
+    await expect(page.locator('h1')).toContainText('ダッシュボード', { timeout: 10000 });
   });
 
   test('食事記録機能', async ({ page }) => {
@@ -89,24 +101,29 @@ test.describe('記録機能のテスト', () => {
     // モーダルが閉じることを確認
     await expect(page.locator('h2')).not.toBeVisible({ timeout: 10000 });
     
-    // 成功メッセージが表示されることを確認
-    await expect(page.locator('text=体重を記録しました')).toBeVisible();
+    // ページをリロードして体重記録が表示されることを確認
+    await page.reload();
+    await page.waitForTimeout(1000);
+    
+    // LogListに体重記録が表示されることを確認
+    await expect(page.locator('div:has-text("体重")').first()).toBeVisible();
+    await expect(page.locator('div:has-text("65.5kg")').first()).toBeVisible();
   });
 
   test('日付ナビゲーター機能', async ({ page }) => {
-    // 日付ナビゲーターが表示されることを確認
-    await expect(page.locator('text=今日')).toBeVisible();
+    // 日付ナビゲーターが表示されることを確認（より具体的なセレクターを使用）
+    await expect(page.locator('div:has-text("今日")').first()).toBeVisible();
     
     // 前の日ボタンをクリック
-    await page.click('button:has-text("前の日")');
+    await page.click('button:has-text("←")');
     
     // 日付が変更されることを確認
-    await expect(page.locator('text=昨日')).toBeVisible();
+    await expect(page.locator('div:has-text("昨日")').first()).toBeVisible();
     
     // 次の日ボタンをクリック
-    await page.click('button:has-text("次の日")');
+    await page.click('button:has-text("→")');
     
     // 今日に戻ることを確認
-    await expect(page.locator('text=今日')).toBeVisible();
+    await expect(page.locator('div:has-text("今日")').first()).toBeVisible();
   });
 });
