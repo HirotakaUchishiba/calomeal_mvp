@@ -30,17 +30,6 @@ export const LoginPage = () => {
     });
 
     if (result) {
-      // 開発環境では認証状態を即座に更新
-      if (import.meta.env.DEV) {
-        const devUser = {
-          userId: 'dev-user-id',
-          username: email,
-          signInDetails: {
-            loginId: email,
-          },
-        };
-        updateAuthState(devUser);
-      }
       // サインイン成功時はAuthContextが自動的に状態を更新
       navigate('/dashboard');
     }
@@ -73,6 +62,23 @@ export const LoginPage = () => {
   return (
     <div style={{ maxWidth: '400px', margin: '0 auto', padding: '20px' }}>
       <h1>ログイン</h1>
+      
+      {import.meta.env.DEV && (
+        <div style={{ 
+          backgroundColor: '#e6f3ff', 
+          padding: '15px', 
+          borderRadius: '5px',
+          marginBottom: '20px',
+          border: '1px solid #b3d9ff'
+        }}>
+          <h3 style={{ margin: '0 0 10px 0', color: '#0066cc' }}>開発環境用テストアカウント</h3>
+          <div style={{ fontSize: '14px', color: '#333' }}>
+            <p><strong>テストユーザー:</strong> test@example.com / password123</p>
+            <p><strong>管理者:</strong> admin@example.com / admin123</p>
+            <p><strong>一般ユーザー:</strong> user@example.com / user123</p>
+          </div>
+        </div>
+      )}
       
       {error && (
         <div style={{ 

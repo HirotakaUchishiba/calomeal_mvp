@@ -41,6 +41,25 @@ interface ConfirmResetPasswordInput {
   newPassword: string;
 }
 
+// 開発環境用のテストユーザー
+const DEV_TEST_USERS = [
+  {
+    username: 'test@example.com',
+    password: 'password123',
+    name: 'テストユーザー',
+  },
+  {
+    username: 'admin@example.com',
+    password: 'admin123',
+    name: '管理者ユーザー',
+  },
+  {
+    username: 'user@example.com',
+    password: 'user123',
+    name: '一般ユーザー',
+  },
+];
+
 // 認証アクション用のフック
 export const useAuthActions = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -55,19 +74,38 @@ export const useAuthActions = () => {
       setIsLoading(true);
       setError(null);
 
-      // 開発環境では認証機能を無効化
+      // 開発環境でのサインアップ処理
       if (import.meta.env.DEV) {
         await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // 既存ユーザーのチェック
+        if (DEV_TEST_USERS.some(user => user.username === input.username)) {
+          setError('このメールアドレスは既に登録されています。');
+          return null;
+        }
+        
+        // パスワード強度チェック
+        if (input.password.length < 8) {
+          setError('パスワードは8文字以上で入力してください。');
+          return null;
+        }
+        
+        // 開発環境では即座にサインアップ完了として扱う
+        const devUser = {
+          userId: `dev-user-${input.username.replace('@', '-').replace('.', '-')}`,
+          username: input.username,
+          name: input.name || '新規ユーザー',
+          signInDetails: {
+            loginId: input.username,
+          },
+        };
+        localStorage.setItem('dev-user', JSON.stringify(devUser));
+        
         return {
-          isSignUpComplete: false,
-          userId: 'dev-user-sub',
+          isSignUpComplete: true,
+          userId: devUser.userId,
           nextStep: {
-            signUpStep: 'CONFIRM_SIGN_UP',
-            codeDeliveryDetails: {
-              destination: input.email,
-              deliveryMedium: 'EMAIL',
-              attributeName: 'email',
-            },
+            signUpStep: 'DONE',
           },
         };
       }
@@ -117,20 +155,40 @@ export const useAuthActions = () => {
     }
   };
 
+  // 開発環境での認証チェック
+  const validateDevCredentials = (username: string, password: string): boolean => {
+    return DEV_TEST_USERS.some(user => 
+      user.username === username && user.password === password
+    );
+  };
+
+  // 開発環境でのユーザー情報取得
+  const getDevUserInfo = (username: string) => {
+    return DEV_TEST_USERS.find(user => user.username === username);
+  };
+
   // サインイン
   const handleSignIn = async (input: SignInInput): Promise<SignInOutput | null> => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // 開発環境では認証機能を無効化
+      // 開発環境での認証チェック
       if (import.meta.env.DEV) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // 開発環境では、localStorageにユーザー情報を保存
+        // 認証情報をチェック
+        if (!validateDevCredentials(input.username, input.password)) {
+          setError('メールアドレスまたはパスワードが正しくありません。');
+          return null;
+        }
+        
+        // 認証成功時は、localStorageにユーザー情報を保存
+        const userInfo = getDevUserInfo(input.username);
         const devUser = {
-          userId: 'dev-user-id',
+          userId: `dev-user-${input.username.replace('@', '-').replace('.', '-')}`,
           username: input.username,
+          name: userInfo?.name || 'テストユーザー',
           signInDetails: {
             loginId: input.username,
           },
