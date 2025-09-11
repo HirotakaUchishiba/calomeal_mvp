@@ -79,9 +79,9 @@ func main() {
 	srv := handler.NewDefaultServer(backend.NewExecutableSchema(cfg))
 
 	// --- ここからCORSの設定 ---
-	// フロントエンドの開発サーバーである http://localhost:5173 からのアクセスを許可する設定
+	// フロントエンドの開発サーバーからのアクセスを許可する設定
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowedOrigins:   []string{"http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176"},
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},
 		AllowCredentials: true,

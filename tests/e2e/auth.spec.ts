@@ -21,7 +21,24 @@ test.describe('認証機能のテスト', () => {
     // 有効な認証情報でログインを試行
     await page.fill('input[type="email"]', 'test@example.com');
     await page.fill('input[type="password"]', 'password123');
+    
+    // コンソールログを監視
+    page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+    
     await page.click('button[type="submit"]');
+    
+    // 認証状態の更新を待機
+    await page.waitForFunction(() => {
+      const authState = window.localStorage.getItem('dev-user');
+      return authState !== null;
+    }, { timeout: 5000 });
+    
+    // ログイン処理の完了を待機
+    await page.waitForTimeout(1000);
+    
+    // 現在のURLを確認
+    const currentUrl = page.url();
+    console.log('Current URL after login:', currentUrl);
     
     // ダッシュボードにリダイレクトされることを確認
     await page.waitForURL('/dashboard', { timeout: 10000 });
