@@ -2,11 +2,19 @@ import { test, expect } from '@playwright/test';
 
 test.describe('記録機能のテスト', () => {
   test.beforeEach(async ({ page }) => {
-    // E2Eテスト用の認証状態を設定（URLパラメータを使用）
-    await page.goto('/dashboard?e2e-test=true');
+    // ログインページにアクセス
+    await page.goto('/login');
+    
+    // テスト用の認証情報でログイン
+    await page.fill('input[type="email"]', 'test@example.com');
+    await page.fill('input[type="password"]', 'password123');
+    await page.click('button[type="submit"]');
+    
+    // ダッシュボードにリダイレクトされるまで待機
+    await page.waitForURL('/dashboard', { timeout: 10000 });
     
     // ダッシュボードが表示されるまで待機
-    await expect(page.locator('h1')).toContainText('ダッシュボード', { timeout: 15000 });
+    await expect(page.locator('h1')).toContainText('ダッシュボード', { timeout: 10000 });
   });
 
   test('食事記録機能', async ({ page }) => {

@@ -175,10 +175,14 @@ export const useAuthActions = () => {
 
       // 開発環境での認証チェック
       if (import.meta.env.DEV) {
+        console.log('E2E Test: Attempting login with:', input.username, input.password);
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         // 認証情報をチェック
-        if (!validateDevCredentials(input.username, input.password)) {
+        const isValid = validateDevCredentials(input.username, input.password);
+        console.log('E2E Test: Credentials valid:', isValid);
+        
+        if (!isValid) {
           setError('メールアドレスまたはパスワードが正しくありません。');
           return null;
         }
@@ -194,6 +198,10 @@ export const useAuthActions = () => {
           },
         };
         localStorage.setItem('dev-user', JSON.stringify(devUser));
+        console.log('E2E Test: Login successful, user stored:', devUser);
+        
+        // 認証状態変更イベントを発火
+        window.dispatchEvent(new CustomEvent('authStateChange'));
         
         return {
           isSignedIn: true,
