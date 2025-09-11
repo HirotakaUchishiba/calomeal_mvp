@@ -19,6 +19,7 @@ interface AuthContextType extends AuthState {
   clearError: () => void;
   refreshUser: () => Promise<void>;
   updateAuthState: (user: any) => void;
+  setE2EAuthState: (user: any) => void;
 }
 
 // 認証コンテキストの作成
@@ -45,16 +46,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       // 開発環境では認証機能を無効化
       if (import.meta.env.DEV) {
-        // 開発環境では、localStorageから認証状態を確認
-        const devUser = localStorage.getItem('dev-user');
-        if (devUser) {
-          const user = JSON.parse(devUser);
+        // E2Eテスト用の認証状態を確認
+        const isE2ETest = window.location.search.includes('e2e-test=true');
+        if (isE2ETest) {
+          // E2Eテスト用の認証状態を強制的に設定
+          const e2eUser = {
+            userId: 'e2e-user-id',
+            username: 'testuser@example.com',
+            signInDetails: {
+              loginId: 'testuser@example.com',
+            },
+          };
           setAuthState({
-            user,
+            user: e2eUser as any,
             isLoading: false,
             isAuthenticated: true,
             error: null,
           });
+          return;
+        }
+        
+        // 通常の開発環境では、localStorageから認証状態を確認
+        const devUser = localStorage.getItem('dev-user');
+        if (devUser) {
+          try {
+            const user = JSON.parse(devUser);
+            setAuthState({
+              user,
+              isLoading: false,
+              isAuthenticated: true,
+              error: null,
+            });
+          } catch (error) {
+            console.error('Failed to parse dev-user:', error);
+            setAuthState({
+              user: null,
+              isLoading: false,
+              isAuthenticated: false,
+              error: null,
+            });
+          }
         } else {
           setAuthState({
             user: null,
@@ -97,6 +128,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       isAuthenticated: true,
       error: null,
     });
+  };
+
+  // E2Eテスト用の認証状態設定
+  const setE2EAuthState = (user: any) => {
+    if (import.meta.env.DEV) {
+      localStorage.setItem('dev-user', JSON.stringify(user));
+      setAuthState({
+        user,
+        isLoading: false,
+        isAuthenticated: true,
+        error: null,
+      });
+    }
   };
 
   // サインアウト
@@ -163,6 +207,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     clearError,
     refreshUser,
     updateAuthState,
+    setE2EAuthState,
   };
 
   return (
