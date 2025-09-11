@@ -48,7 +48,14 @@ export const SignUpPage = () => {
 
     if (result) {
       setSignUpResult(result);
-      setShowConfirmation(true);
+      
+      // 開発環境では即座にサインアップ完了として扱う
+      if (import.meta.env.DEV && result.isSignUpComplete) {
+        alert('アカウントが作成されました。ダッシュボードに移動します。');
+        navigate('/dashboard');
+      } else {
+        setShowConfirmation(true);
+      }
     }
   };
 
