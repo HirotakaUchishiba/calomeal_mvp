@@ -2,10 +2,13 @@ import { test, expect } from '@playwright/test';
 
 test.describe('認証機能のテスト', () => {
   test('ログイン機能', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/login');
     
     // ログイン画面が表示されることを確認
     await expect(page.locator('h1')).toContainText('ログイン');
+    
+    // 開発環境用テストアカウント情報が表示されることを確認
+    await expect(page.locator('text=開発環境用テストアカウント')).toBeVisible();
     
     // 無効な認証情報でログインを試行
     await page.fill('input[type="email"]', 'invalid@example.com');
@@ -13,30 +16,52 @@ test.describe('認証機能のテスト', () => {
     await page.click('button[type="submit"]');
     
     // エラーメッセージが表示されることを確認
-    await expect(page.locator('text=ログインに失敗しました')).toBeVisible();
+    await expect(page.locator('text=メールアドレスまたはパスワードが正しくありません')).toBeVisible();
+    
+    // 有効な認証情報でログインを試行
+    await page.fill('input[type="email"]', 'test@example.com');
+    await page.fill('input[type="password"]', 'password123');
+    await page.click('button[type="submit"]');
+    
+    // ダッシュボードにリダイレクトされることを確認
+    await page.waitForURL('/dashboard', { timeout: 10000 });
+    await expect(page.locator('h1')).toContainText('ダッシュボード', { timeout: 5000 });
   });
 
   test('サインアップ機能', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/login');
     
     // サインアップ画面に遷移
-    await page.click('text=アカウントをお持ちでない方はこちら');
-    await expect(page.locator('h1')).toContainText('アカウント作成');
+    await page.click('text=サインアップ');
+    await expect(page.locator('h1')).toContainText('サインアップ');
     
-    // 無効なパスワードでサインアップを試行
+    // 既存ユーザーでサインアップを試行
+    await page.fill('input[placeholder*="お名前"]', 'テストユーザー');
     await page.fill('input[type="email"]', 'test@example.com');
-    await page.fill('input[type="password"]', '123'); // 短すぎるパスワード
-    await page.fill('input[placeholder*="確認"]', '123');
+    await page.fill('input[type="password"]', 'password123');
+    await page.fill('input[placeholder*="確認"]', 'password123');
+    await page.click('button[type="submit"]');
     
-    // バリデーションエラーが表示されることを確認
-    await expect(page.locator('text=パスワードは8文字以上')).toBeVisible();
+    // 既存ユーザーエラーが表示されることを確認
+    await expect(page.locator('text=このメールアドレスは既に登録されています')).toBeVisible();
+    
+    // 新しいユーザーでサインアップを試行
+    await page.fill('input[placeholder*="お名前"]', '新規ユーザー');
+    await page.fill('input[type="email"]', 'newuser@example.com');
+    await page.fill('input[type="password"]', 'newpassword123');
+    await page.fill('input[placeholder*="確認"]', 'newpassword123');
+    await page.click('button[type="submit"]');
+    
+    // ダッシュボードにリダイレクトされることを確認
+    await page.waitForURL('/dashboard', { timeout: 10000 });
+    await expect(page.locator('h1')).toContainText('ダッシュボード');
   });
 
   test('パスワードリセット機能', async ({ page }) => {
     await page.goto('/');
     
     // パスワードリセットリンクをクリック
-    await page.click('text=パスワードを忘れた方');
+    await page.click('text=パスワードを忘れた場合');
     
     // パスワードリセット画面が表示されることを確認
     await expect(page.locator('h1')).toContainText('パスワードリセット');
