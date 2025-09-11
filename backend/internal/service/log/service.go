@@ -23,15 +23,15 @@ type LogFoodInput struct {
 	Carbohydrate float64
 	Fat          float64
 	Date         string
-  }
+}
 
-  type DailySummary struct {
-	CaloriesIntake  float64
-	CaloriesBurned  float64
-	Protein         float64
-	Carbohydrate    float64
-	Fat             float64
-  }
+type DailySummary struct {
+	CaloriesIntake float64
+	CaloriesBurned float64
+	Protein        float64
+	Carbohydrate   float64
+	Fat            float64
+}
 
 // FoodLogは食事記録を表します
 type FoodLog struct {
@@ -76,6 +76,7 @@ type Service interface {
 	GetDailySummary(ctx context.Context, userID, date string) (DailySummary, error)
 	GetFoodLogs(ctx context.Context, userID, date string) ([]FoodLog, error)
 	GetExerciseLogs(ctx context.Context, userID, date string) ([]ExerciseLog, error)
+	GetWeightLogs(ctx context.Context, userID, date string) ([]WeightLog, error)
 }
 
 type service struct {
@@ -98,7 +99,7 @@ func (s *service) LogFood(ctx context.Context, userID string, in LogFoodInput) (
 		return 0, err
 	}
 	return id, nil
-	}
+}
 
 // LogExerciseは運動記録をデータベースに保存します
 func (s *service) LogExercise(ctx context.Context, userID string, in LogExerciseInput) (int64, error) {
@@ -230,6 +231,42 @@ func (s *service) GetExerciseLogs(ctx context.Context, userID, date string) ([]E
 			&log.ExerciseName,
 			&log.DurationMinutes,
 			&log.CaloriesBurned,
+			&log.LoggedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		logs = append(logs, log)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return logs, nil
+}
+
+// GetWeightLogsは指定された日付の体重記録を取得します
+func (s *service) GetWeightLogs(ctx context.Context, userID, date string) ([]WeightLog, error) {
+	const q = `
+		SELECT id, weight, logged_at
+		FROM weight_logs
+		WHERE user_id = $1
+		  AND DATE_TRUNC('day', logged_at) = DATE_TRUNC('day', $2::timestamptz)
+		ORDER BY logged_at DESC
+	`
+	rows, err := s.db.QueryContext(ctx, q, userID, date)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var logs []WeightLog
+	for rows.Next() {
+		var log WeightLog
+		err := rows.Scan(
+			&log.ID,
+			&log.Weight,
 			&log.LoggedAt,
 		)
 		if err != nil {

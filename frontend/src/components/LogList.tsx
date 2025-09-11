@@ -1,11 +1,11 @@
 import React from 'react';
 import { useQuery } from '@apollo/client';
-import { GET_FOOD_LOGS_QUERY, GET_EXERCISE_LOGS_QUERY } from '../graphql/queries';
+import { GET_FOOD_LOGS_QUERY, GET_EXERCISE_LOGS_QUERY, GET_WEIGHT_LOGS_QUERY } from '../graphql/queries';
 
 // ログアイテムの型定義
 type LogItem = {
   id: string;
-  type: 'food' | 'exercise';
+  type: 'food' | 'exercise' | 'weight';
   name: string;
   details: string;
   calories: number;
@@ -26,6 +26,11 @@ export const LogList = ({ date }: Props) => {
 
   // 運動記録を取得
   const { data: exerciseData, loading: exerciseLoading, error: exerciseError } = useQuery(GET_EXERCISE_LOGS_QUERY, {
+    variables: { date }
+  });
+
+  // 体重記録を取得
+  const { data: weightData, loading: weightLoading, error: weightError } = useQuery(GET_WEIGHT_LOGS_QUERY, {
     variables: { date }
   });
 
@@ -53,14 +58,25 @@ export const LogList = ({ date }: Props) => {
       color: '#2196F3'
     }));
 
-    // 食事記録と運動記録を統合して時間順でソート
-    return [...foodLogs, ...exerciseLogs].sort((a, b) => 
+    const weightLogs: LogItem[] = (weightData?.weightLogs || []).map((log: any) => ({
+      id: log.id,
+      type: 'weight' as const,
+      name: '体重',
+      details: `${log.weight}kg`,
+      calories: 0,
+      loggedAt: log.loggedAt,
+      icon: '📏',
+      color: '#4CAF50'
+    }));
+
+    // 食事記録、運動記録、体重記録を統合して時間順でソート
+    return [...foodLogs, ...exerciseLogs, ...weightLogs].sort((a, b) => 
       new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime()
     );
-  }, [foodData, exerciseData]);
+  }, [foodData, exerciseData, weightData]);
 
   // ローディング状態
-  if (foodLoading || exerciseLoading) {
+  if (foodLoading || exerciseLoading || weightLoading) {
     return (
       <div style={{
         padding: '20px',
@@ -77,7 +93,7 @@ export const LogList = ({ date }: Props) => {
   }
 
   // エラー状態
-  if (foodError || exerciseError) {
+  if (foodError || exerciseError || weightError) {
     return (
       <div style={{
         padding: '20px',

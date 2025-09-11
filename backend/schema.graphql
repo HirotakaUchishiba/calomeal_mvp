@@ -14,6 +14,9 @@ type Query {
 
   "指定された日付のユーザーの運動記録を取得します"
   exerciseLogs(date: String!): [ExerciseLog!]! @auth
+
+  "指定された日付のユーザーの体重記録を取得します"
+  weightLogs(date: String!): [WeightLog!]! @auth
 }
 
 type Mutation {

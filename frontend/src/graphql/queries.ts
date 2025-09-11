@@ -49,3 +49,13 @@ export const LOG_WEIGHT_MUTATION = gql`
     }
   }
 `;
+
+export const GET_WEIGHT_LOGS_QUERY = gql`
+query GetWeightLogs($date: String!) {
+  weightLogs(date: $date) {
+    id
+    weight
+    loggedAt
+  }
+}
+`;

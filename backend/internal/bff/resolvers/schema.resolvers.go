@@ -406,6 +406,29 @@ func (r *queryResolver) ExerciseLogs(ctx context.Context, date string) ([]*backe
 	return exerciseLogs, nil
 }
 
+// WeightLogs is the resolver for the weightLogs field.
+func (r *queryResolver) WeightLogs(ctx context.Context, date string) ([]*backend.WeightLog, error) {
+	// TODO: コンテキストから実際のユーザーIDを取得
+	userID := "550e8400-e29b-41d4-a716-446655440000"
+
+	// LogServiceから体重記録を取得
+	logs, err := r.Resolver.LogService.GetWeightLogs(ctx, userID, date)
+	if err != nil {
+		return nil, err
+	}
+
+	// サービス層の型からGraphQLの型に変換
+	weightLogs := make([]*backend.WeightLog, 0, len(logs))
+	for _, log := range logs {
+		weightLogs = append(weightLogs, &backend.WeightLog{
+			ID:       fmt.Sprintf("%d", log.ID),
+			Weight:   log.Weight,
+			LoggedAt: log.LoggedAt,
+		})
+	}
+	return weightLogs, nil
+}
+
 // Mutation returns backend.MutationResolver implementation.
 func (r *Resolver) Mutation() backend.MutationResolver { return &mutationResolver{r} }
 
