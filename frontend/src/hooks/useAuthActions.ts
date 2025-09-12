@@ -101,6 +101,9 @@ export const useAuthActions = () => {
         };
         localStorage.setItem('dev-user', JSON.stringify(devUser));
         
+        // 認証状態変更イベントを発火
+        window.dispatchEvent(new CustomEvent('authStateChange'));
+        
         return {
           isSignUpComplete: true,
           userId: devUser.userId,
