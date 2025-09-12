@@ -16,10 +16,10 @@ export const SignUpPage = () => {
   const { signUp, confirmSignUp, resendSignUpCode, isLoading, error, clearError } = useAuthActions();
   const navigate = useNavigate();
 
-  // 認証済みの場合はダッシュボードにリダイレクト
+  // 認証済みの場合はオンボーディングにリダイレクト
   useEffect(() => {
     if (isAuthenticated && user) {
-      navigate('/dashboard');
+      navigate('/onboarding');
     }
   }, [isAuthenticated, user, navigate]);
 
@@ -51,8 +51,8 @@ export const SignUpPage = () => {
       
       // 開発環境では即座にサインアップ完了として扱う
       if (import.meta.env.DEV && result.isSignUpComplete) {
-        alert('アカウントが作成されました。ダッシュボードに移動します。');
-        navigate('/dashboard');
+        alert('アカウントが作成されました。オンボーディングに移動します。');
+        navigate('/onboarding');
       } else {
         setShowConfirmation(true);
       }
