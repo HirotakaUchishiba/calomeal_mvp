@@ -100,10 +100,11 @@ test.describe('認証機能のテスト', () => {
     await page.fill('input[type="email"]', 'test@example.com');
     await page.click('button[type="submit"]');
     
-    // 送信完了メッセージが表示されることを確認（モーダル内の正確なテキストを使用）
+    // 送信完了メッセージが表示されることを確認（ページ内のメッセージ）
     await expect(page.getByText('パスワードリセット用のメールを送信しました。メールをご確認ください。')).toBeVisible();
     
-    // OKボタンをクリックしてモーダルを閉じる
-    await page.getByRole('button', { name: 'OK' }).click();
+    // 3秒後に自動的にログイン画面に戻ることを確認
+    await page.waitForTimeout(4000);
+    await expect(page.locator('h1')).toContainText('ログイン');
   });
 });
