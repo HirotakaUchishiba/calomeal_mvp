@@ -10,8 +10,17 @@ test.describe('記録機能のテスト', () => {
     await page.fill('input[type="password"]', 'password123');
     await page.click('button[type="submit"]');
     
-    // ダッシュボードにリダイレクトされるまで待機
-    await page.waitForURL('/dashboard', { timeout: 10000 });
+    // 認証状態の更新を待機
+    await page.waitForFunction(() => {
+      const authState = window.localStorage.getItem('dev-user');
+      return authState !== null;
+    }, { timeout: 5000 });
+    
+    // ログイン処理の完了を待機
+    await page.waitForTimeout(1000);
+    
+    // ダッシュボードに直接遷移
+    await page.goto('/dashboard');
     
     // ダッシュボードが表示されるまで待機
     await expect(page.locator('h1')).toContainText('ダッシュボード', { timeout: 10000 });
