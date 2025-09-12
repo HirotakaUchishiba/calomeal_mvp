@@ -10,18 +10,20 @@ test.describe('E2E-HP-001: ハッピーパス', () => {
     await expect(page.locator('h1')).toContainText('ログイン');
 
     // 2. Action: 「サインアップ」し、新しいユーザーを登録する
-    await page.click('text=アカウントをお持ちでない方はこちら');
+    await page.click('text=サインアップ');
     
     // サインアップ画面に遷移することを確認
-    await expect(page.locator('h1')).toContainText('アカウント作成');
+    await expect(page.locator('h1')).toContainText('サインアップ');
     
     // テスト用のユーザー情報を入力
+    const testName = `test`;
     const testEmail = `test-${Date.now()}@example.com`;
     const testPassword = 'TestPassword123!';
     
+    await page.fill('input[type="text"]', testName);
     await page.fill('input[type="email"]', testEmail);
     await page.fill('input[type="password"]', testPassword);
-    await page.fill('input[placeholder*="確認"]', testPassword);
+    await page.fill('input[id="confirmPassword"]', testPassword);
     
     // サインアップボタンをクリック
     await page.click('button[type="submit"]');
