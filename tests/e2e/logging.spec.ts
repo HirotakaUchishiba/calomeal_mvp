@@ -10,7 +10,30 @@ test.describe('記録機能のテスト', () => {
     await page.fill('input[type="password"]', 'password123');
     await page.click('button[type="submit"]');
     
-    // ダッシュボードにリダイレクトされるまで待機
+    // 認証状態の更新を待機
+    await page.waitForFunction(() => {
+      const authState = window.localStorage.getItem('dev-user');
+      return authState !== null;
+    }, { timeout: 5000 });
+    
+    // ログイン処理の完了を待機
+    await page.waitForTimeout(1000);
+    
+    // オンボーディングページに遷移することを確認
+    await page.waitForURL('/onboarding', { timeout: 10000 });
+    await expect(page.locator('h1')).toContainText('ようこそ！目標を設定しましょう');
+    
+    // オンボーディング情報を入力
+    await page.fill('input[id="height"]', '170');
+    await page.fill('input[id="weight"]', '70');
+    await page.selectOption('select[id="activityLevel"]', 'normal');
+    await page.fill('input[id="targetWeight"]', '65');
+    await page.fill('input[id="targetDate"]', '2025-12-31');
+    
+    // オンボーディングを完了
+    await page.click('button[type="submit"]');
+    
+    // ダッシュボードに遷移するまで待機
     await page.waitForURL('/dashboard', { timeout: 10000 });
     
     // ダッシュボードが表示されるまで待機

@@ -82,9 +82,9 @@ test.describe('認証機能のテスト', () => {
       return authState !== null;
     }, { timeout: 5000 });
     
-    // ダッシュボードにリダイレクトされることを確認
-    await page.waitForURL('/dashboard', { timeout: 10000 });
-    await expect(page.locator('h1')).toContainText('ダッシュボード');
+    // オンボーディングにリダイレクトされることを確認
+    await page.waitForURL('/onboarding', { timeout: 10000 });
+    await expect(page.locator('h1')).toContainText('ようこそ！目標を設定しましょう');
   });
 
   test('パスワードリセット機能', async ({ page }) => {
