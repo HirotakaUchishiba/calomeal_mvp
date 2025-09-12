@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { gql } from '@apollo/client';
 import { useMutation } from '@apollo/client/react';
 
@@ -13,6 +14,8 @@ const COMPLETE_ONBOARDING_MUTATION = gql`
 `;
 
 export const OnboardingPage = () => {
+  const navigate = useNavigate();
+  
   // プロフィール情報の状態
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
@@ -46,7 +49,8 @@ export const OnboardingPage = () => {
       }
     }).then((response: any) => {
       console.log('Onboarding Succeeded:', response.data);
-      // TODO: 成功したらダッシュボードへリダイレクトする処理を後で実装します
+      // 成功したらダッシュボードへリダイレクト
+      navigate('/dashboard');
     }).catch((err: any) => {
       console.error('Onboarding Failed:', err);
     });

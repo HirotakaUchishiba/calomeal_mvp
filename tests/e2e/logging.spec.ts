@@ -19,8 +19,22 @@ test.describe('記録機能のテスト', () => {
     // ログイン処理の完了を待機
     await page.waitForTimeout(1000);
     
-    // ダッシュボードに直接遷移
-    await page.goto('/dashboard');
+    // オンボーディングページに遷移することを確認
+    await page.waitForURL('/onboarding', { timeout: 10000 });
+    await expect(page.locator('h1')).toContainText('ようこそ！目標を設定しましょう');
+    
+    // オンボーディング情報を入力
+    await page.fill('input[id="height"]', '170');
+    await page.fill('input[id="weight"]', '70');
+    await page.selectOption('select[id="activityLevel"]', 'normal');
+    await page.fill('input[id="targetWeight"]', '65');
+    await page.fill('input[id="targetDate"]', '2025-12-31');
+    
+    // オンボーディングを完了
+    await page.click('button[type="submit"]');
+    
+    // ダッシュボードに遷移するまで待機
+    await page.waitForURL('/dashboard', { timeout: 10000 });
     
     // ダッシュボードが表示されるまで待機
     await expect(page.locator('h1')).toContainText('ダッシュボード', { timeout: 10000 });
