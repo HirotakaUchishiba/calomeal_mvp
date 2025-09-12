@@ -47,16 +47,19 @@ const DEV_TEST_USERS = [
     username: 'test@example.com',
     password: 'password123',
     name: 'テストユーザー',
+    isOnboardingCompleted: true, // 既存ユーザーはオンボーディング完了済み
   },
   {
     username: 'admin@example.com',
     password: 'admin123',
     name: '管理者ユーザー',
+    isOnboardingCompleted: true, // 既存ユーザーはオンボーディング完了済み
   },
   {
     username: 'user@example.com',
     password: 'user123',
     name: '一般ユーザー',
+    isOnboardingCompleted: true, // 既存ユーザーはオンボーディング完了済み
   },
 ];
 
@@ -95,6 +98,7 @@ export const useAuthActions = () => {
           userId: `dev-user-${input.username.replace('@', '-').replace('.', '-')}`,
           username: input.username,
           name: input.name || '新規ユーザー',
+          isOnboardingCompleted: false, // 新規ユーザーはオンボーディング未完了
           signInDetails: {
             loginId: input.username,
           },
@@ -196,6 +200,7 @@ export const useAuthActions = () => {
           userId: `dev-user-${input.username.replace('@', '-').replace('.', '-')}`,
           username: input.username,
           name: userInfo?.name || 'テストユーザー',
+          isOnboardingCompleted: userInfo?.isOnboardingCompleted || false,
           signInDetails: {
             loginId: input.username,
           },
@@ -317,6 +322,24 @@ export const useAuthActions = () => {
     }
   };
 
+  // オンボーディング完了処理
+  const completeOnboarding = () => {
+    if (import.meta.env.DEV) {
+      const devUser = localStorage.getItem('dev-user');
+      if (devUser) {
+        try {
+          const user = JSON.parse(devUser);
+          user.isOnboardingCompleted = true;
+          localStorage.setItem('dev-user', JSON.stringify(user));
+          // 認証状態変更イベントを発火
+          window.dispatchEvent(new CustomEvent('authStateChange'));
+        } catch (error) {
+          console.error('Failed to update onboarding status:', error);
+        }
+      }
+    }
+  };
+
   return {
     isLoading,
     error,
@@ -327,5 +350,6 @@ export const useAuthActions = () => {
     resetPassword: handleResetPassword,
     confirmResetPassword: handleConfirmResetPassword,
     resendSignUpCode: handleResendSignUpCode,
+    completeOnboarding,
   };
 };

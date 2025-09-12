@@ -40,7 +40,7 @@ test.describe('認証機能のテスト', () => {
     const currentUrl = page.url();
     console.log('Current URL after login:', currentUrl);
     
-    // ダッシュボードにリダイレクトされることを確認
+    // 既存ユーザー（test@example.com）はオンボーディング完了済みなのでダッシュボードにリダイレクト
     await page.waitForURL('/dashboard', { timeout: 10000 });
     await expect(page.locator('h1')).toContainText('ダッシュボード', { timeout: 5000 });
   });

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gql } from '@apollo/client';
 import { useMutation } from '@apollo/client/react';
+import { useAuthActions } from '../../hooks/useAuthActions';
 
 // バックエンドのschema.graphqlで定義したミューテーションを記述します
 const COMPLETE_ONBOARDING_MUTATION = gql`
@@ -15,6 +16,7 @@ const COMPLETE_ONBOARDING_MUTATION = gql`
 
 export const OnboardingPage = () => {
   const navigate = useNavigate();
+  const { completeOnboarding: markOnboardingComplete } = useAuthActions();
   
   // プロフィール情報の状態
   const [height, setHeight] = useState('');
@@ -49,6 +51,8 @@ export const OnboardingPage = () => {
       }
     }).then((response: any) => {
       console.log('Onboarding Succeeded:', response.data);
+      // オンボーディング完了状態を更新
+      markOnboardingComplete();
       // 成功したらダッシュボードへリダイレクト
       navigate('/dashboard');
     }).catch((err: any) => {
