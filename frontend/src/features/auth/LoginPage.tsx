@@ -10,7 +10,7 @@ export const LoginPage = () => {
   const [resetEmail, setResetEmail] = useState('');
   const [resetSuccessMessage, setResetSuccessMessage] = useState('');
   
-  const { isAuthenticated, user, updateAuthState } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { signIn, resetPassword, isLoading, error, clearError } = useAuthActions();
   const navigate = useNavigate();
 
