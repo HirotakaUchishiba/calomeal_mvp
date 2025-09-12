@@ -94,7 +94,7 @@ test.describe('認証機能のテスト', () => {
     await page.click('text=パスワードを忘れた場合');
     
     // パスワードリセット画面が表示されることを確認
-    await expect(page.locator('h1')).toContainText('パスワードリセット');
+    await expect(page.locator('h2')).toContainText('パスワードリセット');
     
     // メールアドレスを入力
     await page.fill('input[type="email"]', 'test@example.com');
