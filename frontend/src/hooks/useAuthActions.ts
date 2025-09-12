@@ -241,9 +241,14 @@ export const useAuthActions = () => {
         
         // 開発環境では常に成功として扱う
         return {
-          isPasswordResetStep: 'CONFIRM_RESET_PASSWORD_WITH_CODE',
+          isPasswordReset: true,
           nextStep: {
             resetPasswordStep: 'CONFIRM_RESET_PASSWORD_WITH_CODE',
+            codeDeliveryDetails: {
+              destination: input.username,
+              deliveryMedium: 'EMAIL',
+              attributeName: 'email',
+            },
           },
         };
       }
