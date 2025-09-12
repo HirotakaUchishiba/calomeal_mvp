@@ -55,7 +55,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // 認証済みユーザーが認証不要なページにアクセスした場合
   if (!requireAuth && isAuthenticated) {
-    const redirectPath = redirectTo || '/dashboard';
+    const redirectPath = redirectTo || '/onboarding';
     return <Navigate to={redirectPath} replace />;
   }
 
