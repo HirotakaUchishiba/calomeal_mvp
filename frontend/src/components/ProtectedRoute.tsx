@@ -15,8 +15,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireAuth = true,
   redirectTo 
 }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
+
+  // オンボーディング完了状態をチェック
+  const isOnboardingCompleted = user && (user as any).isOnboardingCompleted;
 
   // ローディング中は表示しない
   if (isLoading) {
@@ -55,8 +58,24 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // 認証済みユーザーが認証不要なページにアクセスした場合
   if (!requireAuth && isAuthenticated) {
-    const redirectPath = redirectTo || '/onboarding';
+    // オンボーディング完了状態に基づいてリダイレクト先を決定
+    const redirectPath = redirectTo || (isOnboardingCompleted ? '/dashboard' : '/onboarding');
     return <Navigate to={redirectPath} replace />;
+  }
+
+  // 認証が必要なページで、オンボーディング完了状態に基づいてリダイレクト
+  if (requireAuth && isAuthenticated) {
+    const currentPath = location.pathname;
+    
+    // オンボーディング未完了のユーザーがダッシュボードにアクセスした場合
+    if (currentPath === '/dashboard' && !isOnboardingCompleted) {
+      return <Navigate to="/onboarding" replace />;
+    }
+    
+    // オンボーディング完了済みのユーザーがオンボーディングページにアクセスした場合
+    if (currentPath === '/onboarding' && isOnboardingCompleted) {
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
   return <>{children}</>;
