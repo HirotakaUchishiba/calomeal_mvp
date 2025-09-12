@@ -235,6 +235,24 @@ export const useAuthActions = () => {
       setIsLoading(true);
       setError(null);
 
+      // 開発環境でのパスワードリセット処理
+      if (import.meta.env.DEV) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // 開発環境では常に成功として扱う
+        return {
+          isPasswordReset: true,
+          nextStep: {
+            resetPasswordStep: 'CONFIRM_RESET_PASSWORD_WITH_CODE',
+            codeDeliveryDetails: {
+              destination: input.username,
+              deliveryMedium: 'EMAIL',
+              attributeName: 'email',
+            },
+          },
+        };
+      }
+
       const result = await resetPassword({
         username: input.username,
       });
@@ -256,6 +274,14 @@ export const useAuthActions = () => {
     try {
       setIsLoading(true);
       setError(null);
+
+      // 開発環境でのパスワードリセット確認処理
+      if (import.meta.env.DEV) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // 開発環境では常に成功として扱う
+        return;
+      }
 
       await confirmResetPassword({
         username: input.username,

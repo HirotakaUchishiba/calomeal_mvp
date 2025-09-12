@@ -8,6 +8,7 @@ export const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+  const [resetSuccessMessage, setResetSuccessMessage] = useState('');
   
   const { isAuthenticated, user, updateAuthState } = useAuth();
   const { signIn, resetPassword, isLoading, error, clearError } = useAuthActions();
@@ -38,15 +39,20 @@ export const LoginPage = () => {
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
+    setResetSuccessMessage('');
 
     const result = await resetPassword({
       username: resetEmail,
     });
 
     if (result) {
-      alert('パスワードリセット用のメールを送信しました。メールをご確認ください。');
-      setShowPasswordReset(false);
-      setResetEmail('');
+      setResetSuccessMessage('パスワードリセット用のメールを送信しました。メールをご確認ください。');
+      // 3秒後にメッセージを消してログイン画面に戻る
+      setTimeout(() => {
+        setResetSuccessMessage('');
+        setShowPasswordReset(false);
+        setResetEmail('');
+      }, 3000);
     }
   };
 
@@ -89,6 +95,19 @@ export const LoginPage = () => {
           marginBottom: '20px'
         }}>
           {error}
+        </div>
+      )}
+
+      {resetSuccessMessage && (
+        <div style={{ 
+          color: 'green', 
+          backgroundColor: '#e6ffe6', 
+          padding: '10px', 
+          borderRadius: '5px',
+          marginBottom: '20px',
+          border: '1px solid #4CAF50'
+        }}>
+          {resetSuccessMessage}
         </div>
       )}
 
