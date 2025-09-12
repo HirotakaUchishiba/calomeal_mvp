@@ -100,7 +100,10 @@ test.describe('認証機能のテスト', () => {
     await page.fill('input[type="email"]', 'test@example.com');
     await page.click('button[type="submit"]');
     
-    // 送信完了メッセージが表示されることを確認
-    await expect(page.locator('text=リセットメールを送信しました')).toBeVisible();
+    // 送信完了メッセージが表示されることを確認（モーダル内の正確なテキストを使用）
+    await expect(page.getByText('パスワードリセット用のメールを送信しました。メールをご確認ください。')).toBeVisible();
+    
+    // OKボタンをクリックしてモーダルを閉じる
+    await page.getByRole('button', { name: 'OK' }).click();
   });
 });
