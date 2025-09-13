@@ -46,7 +46,7 @@ module "alb" {
   vpc_id              = module.vpc.vpc_id
   public_subnet_ids   = module.vpc.public_subnet_ids
   target_port         = 8080
-  ssl_certificate_arn = null  # 後でSSL証明書を設定
+  ssl_certificate_arn = null  # SSL証明書は後で設定（現在検証待ち）
 }
 # --- IAMモジュールの呼び出し ---
 module "iam" {
