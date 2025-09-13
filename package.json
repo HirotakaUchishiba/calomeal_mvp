@@ -25,6 +25,8 @@
   },
   "homepage": "https://github.com/HirotakaUchishiba/calomeal_mvp#readme",
   "devDependencies": {
-    "@playwright/test": "^1.55.0"
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^24.3.3",
+    "typescript": "^5.9.2"
   }
 }
