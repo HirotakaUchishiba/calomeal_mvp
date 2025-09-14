@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend"
+	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/bff/middleware"
 )
 
 // SignUp is the resolver for the signUp field.
@@ -98,27 +99,196 @@ func (r *queryResolver) WeightLogs(ctx context.Context, date string) ([]*backend
 
 // NutritionSummary is the resolver for the nutritionSummary field.
 func (r *queryResolver) NutritionSummary(ctx context.Context, date string) (*backend.NutritionSummary, error) {
-	panic(fmt.Errorf("not implemented: NutritionSummary - nutritionSummary"))
+	userID, ok := middleware.GetUserIDFromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("user not authenticated")
+	}
+
+	summary, err := r.AnalyticsService.GetDailyNutritionSummary(ctx, userID, date)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get nutrition summary: %w", err)
+	}
+
+	// Convert protobuf to GraphQL types
+	meals := make([]*backend.MealSummary, len(summary.Meals))
+	for i, meal := range summary.Meals {
+		meals[i] = &backend.MealSummary{
+			MealType:     meal.MealType,
+			Calories:     int(meal.Calories),
+			Protein:      int(meal.Protein),
+			Carbohydrate: int(meal.Carbohydrate),
+			Fat:          int(meal.Fat),
+			FoodItems:    meal.FoodItems,
+		}
+	}
+
+	return &backend.NutritionSummary{
+		Date:            summary.Date,
+		CaloriesIntake:  int(summary.CaloriesIntake),
+		CaloriesBurned:  int(summary.CaloriesBurned),
+		CaloriesBalance: int(summary.CaloriesBalance),
+		Protein:         int(summary.Protein),
+		Carbohydrate:    int(summary.Carbohydrate),
+		Fat:             int(summary.Fat),
+		Fiber:           int(summary.Fiber),
+		Sugar:           int(summary.Sugar),
+		Sodium:          int(summary.Sodium),
+		Meals:           meals,
+	}, nil
 }
 
 // NutritionTrends is the resolver for the nutritionTrends field.
 func (r *queryResolver) NutritionTrends(ctx context.Context, startDate string, endDate string) (*backend.NutritionTrends, error) {
-	panic(fmt.Errorf("not implemented: NutritionTrends - nutritionTrends"))
+	userID, ok := middleware.GetUserIDFromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("user not authenticated")
+	}
+
+	trends, err := r.AnalyticsService.GetWeeklyNutritionTrends(ctx, userID, startDate, endDate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get nutrition trends: %w", err)
+	}
+
+	// Convert protobuf to GraphQL types
+	dailySummaries := make([]*backend.NutritionSummary, len(trends.DailySummaries))
+	for i, summary := range trends.DailySummaries {
+		meals := make([]*backend.MealSummary, len(summary.Meals))
+		for j, meal := range summary.Meals {
+			meals[j] = &backend.MealSummary{
+				MealType:     meal.MealType,
+				Calories:     int(meal.Calories),
+				Protein:      int(meal.Protein),
+				Carbohydrate: int(meal.Carbohydrate),
+				Fat:          int(meal.Fat),
+				FoodItems:    meal.FoodItems,
+			}
+		}
+
+		dailySummaries[i] = &backend.NutritionSummary{
+			Date:            summary.Date,
+			CaloriesIntake:  int(summary.CaloriesIntake),
+			CaloriesBurned:  int(summary.CaloriesBurned),
+			CaloriesBalance: int(summary.CaloriesBalance),
+			Protein:         int(summary.Protein),
+			Carbohydrate:    int(summary.Carbohydrate),
+			Fat:             int(summary.Fat),
+			Fiber:           int(summary.Fiber),
+			Sugar:           int(summary.Sugar),
+			Sodium:          int(summary.Sodium),
+			Meals:           meals,
+		}
+	}
+
+	return &backend.NutritionTrends{
+		DailySummaries:   dailySummaries,
+		CaloriesAvg:      trends.Trends.CaloriesAvg,
+		ProteinAvg:       trends.Trends.ProteinAvg,
+		CarbohydrateAvg:  trends.Trends.CarbohydrateAvg,
+		FatAvg:           trends.Trends.FatAvg,
+		CaloriesTrend:    trends.Trends.CaloriesTrend,
+		ProteinTrend:     trends.Trends.ProteinTrend,
+		CarbohydrateTrend: trends.Trends.CarbohydrateTrend,
+		FatTrend:         trends.Trends.FatTrend,
+	}, nil
 }
 
 // NutritionInsights is the resolver for the nutritionInsights field.
 func (r *queryResolver) NutritionInsights(ctx context.Context, year string, month string) (*backend.NutritionInsights, error) {
-	panic(fmt.Errorf("not implemented: NutritionInsights - nutritionInsights"))
+	userID, ok := middleware.GetUserIDFromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("user not authenticated")
+	}
+
+	insights, err := r.AnalyticsService.GetMonthlyNutritionInsights(ctx, userID, year, month)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get nutrition insights: %w", err)
+	}
+
+	return &backend.NutritionInsights{
+		Year:                 insights.Year,
+		Month:                insights.Month,
+		TotalCalories:        int(insights.TotalCalories),
+		AvgDailyCalories:     int(insights.AvgDailyCalories),
+		TotalProtein:         int(insights.TotalProtein),
+		AvgDailyProtein:      int(insights.AvgDailyProtein),
+		TotalCarbohydrate:    int(insights.TotalCarbohydrate),
+		AvgDailyCarbohydrate: int(insights.AvgDailyCarbohydrate),
+		TotalFat:             int(insights.TotalFat),
+		AvgDailyFat:          int(insights.AvgDailyFat),
+		TopFoods:             insights.TopFoods,
+		Recommendations:      insights.Recommendations,
+	}, nil
 }
 
 // WeightProgress is the resolver for the weightProgress field.
 func (r *queryResolver) WeightProgress(ctx context.Context, startDate string, endDate string) (*backend.WeightProgress, error) {
-	panic(fmt.Errorf("not implemented: WeightProgress - weightProgress"))
+	userID, ok := middleware.GetUserIDFromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("user not authenticated")
+	}
+
+	progress, err := r.AnalyticsService.GetWeightProgressAnalysis(ctx, userID, startDate, endDate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get weight progress: %w", err)
+	}
+
+	// Convert protobuf to GraphQL types
+	dataPoints := make([]*backend.WeightDataPoint, len(progress.DataPoints))
+	for i, point := range progress.DataPoints {
+		dataPoints[i] = &backend.WeightDataPoint{
+			Date:   point.Date,
+			Weight: point.Weight,
+		}
+	}
+
+	return &backend.WeightProgress{
+		StartDate:              progress.StartDate,
+		EndDate:                progress.EndDate,
+		StartWeight:            progress.StartWeight,
+		EndWeight:              progress.EndWeight,
+		WeightChange:           progress.WeightChange,
+		WeightChangePercentage: progress.WeightChangePercentage,
+		AvgWeeklyChange:        progress.AvgWeeklyChange,
+		DataPoints:             dataPoints,
+		Trend:                  progress.Trend,
+	}, nil
 }
 
 // CalorieBalance is the resolver for the calorieBalance field.
 func (r *queryResolver) CalorieBalance(ctx context.Context, startDate string, endDate string) (*backend.CalorieBalance, error) {
-	panic(fmt.Errorf("not implemented: CalorieBalance - calorieBalance"))
+	userID, ok := middleware.GetUserIDFromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("user not authenticated")
+	}
+
+	balance, err := r.AnalyticsService.GetCalorieBalanceAnalysis(ctx, userID, startDate, endDate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get calorie balance: %w", err)
+	}
+
+	// Convert protobuf to GraphQL types
+	dailyBalances := make([]*backend.DailyBalance, len(balance.DailyBalances))
+	for i, daily := range balance.DailyBalances {
+		dailyBalances[i] = &backend.DailyBalance{
+			Date:           daily.Date,
+			CaloriesIntake: int(daily.CaloriesIntake),
+			CaloriesBurned: int(daily.CaloriesBurned),
+			Balance:        int(daily.Balance),
+		}
+	}
+
+	return &backend.CalorieBalance{
+		StartDate:           balance.StartDate,
+		EndDate:             balance.EndDate,
+		TotalCaloriesIntake: int(balance.TotalCaloriesIntake),
+		TotalCaloriesBurned: int(balance.TotalCaloriesBurned),
+		TotalCalorieBalance: int(balance.TotalCalorieBalance),
+		AvgDailyBalance:     balance.AvgDailyBalance,
+		DaysInDeficit:       int(balance.DaysInDeficit),
+		DaysInSurplus:       int(balance.DaysInSurplus),
+		DeficitPercentage:   balance.DeficitPercentage,
+		DailyBalances:       dailyBalances,
+	}, nil
 }
 
 // Mutation returns backend.MutationResolver implementation.
