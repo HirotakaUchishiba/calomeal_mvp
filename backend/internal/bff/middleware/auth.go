@@ -29,10 +29,29 @@ func InitAuthMiddleware(service auth.Service) {
 }
 
 func Auth(ctx context.Context, obj interface{}, next graphql.Resolver) (interface{}, error) {
-	// 開発環境では認証をスキップ
+	// 開発環境では認証をスキップ（環境変数で制御）
 	if os.Getenv("ENVIRONMENT") == "development" || os.Getenv("ENVIRONMENT") == "" {
-		fmt.Println("Auth directive: Development mode - skipping authentication")
-		return next(ctx)
+		// 開発環境でも認証ヘッダーがある場合は認証を実行
+		reqCtx := graphql.GetOperationContext(ctx)
+		if reqCtx != nil {
+			authHeader := reqCtx.Headers.Get("Authorization")
+			if authHeader != "" {
+				// 認証ヘッダーがある場合は認証を実行
+				fmt.Println("Auth directive: Development mode with auth header - performing authentication")
+			} else {
+				// 認証ヘッダーがない場合はダミーユーザーを設定
+				fmt.Println("Auth directive: Development mode - using dummy user")
+				ctx = context.WithValue(ctx, UserIDKey, "dev-user-123")
+				ctx = context.WithValue(ctx, EmailKey, "dev@example.com")
+				return next(ctx)
+			}
+		} else {
+			// コンテキストがない場合はダミーユーザーを設定
+			fmt.Println("Auth directive: Development mode - using dummy user")
+			ctx = context.WithValue(ctx, UserIDKey, "dev-user-123")
+			ctx = context.WithValue(ctx, EmailKey, "dev@example.com")
+			return next(ctx)
+		}
 	}
 	
 	// 本番環境ではJWT認証を実行
