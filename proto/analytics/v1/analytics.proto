@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package analytics.v1;
+option go_package = "github.com/HirotakaUchishiba/calomeal_mvp/proto/analytics/v1;analyticspb";
+
+// AnalyticsService provides analytics and summary functionality
+service AnalyticsService {
+  // GetDailySummary provides daily nutritional and activity summary
+  rpc GetDailySummary(GetDailySummaryRequest) returns (GetDailySummaryResponse);
+}
+
+// GetDailySummaryRequest represents a request for daily summary
+message GetDailySummaryRequest {
+  string date = 1;  // Date in YYYY-MM-DD format
+}
+
+// GetDailySummaryResponse contains the daily summary data
+message GetDailySummaryResponse {
+  double calories_intake = 1;    // Total calories consumed
+  double calories_burned = 2;    // Total calories burned
+  double protein = 3;            // Total protein consumed (grams)
+  double carbohydrate = 4;       // Total carbohydrate consumed (grams)
+  double fat = 5;                // Total fat consumed (grams)
+}
