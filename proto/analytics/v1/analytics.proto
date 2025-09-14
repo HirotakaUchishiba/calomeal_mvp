@@ -1,24 +1,177 @@
 syntax = "proto3";
 
 package analytics.v1;
-option go_package = "github.com/HirotakaUchishiba/calomeal_mvp/proto/analytics/v1;analyticspb";
 
-// AnalyticsService provides analytics and summary functionality
+option go_package = "github.com/HirotakaUchishiba/calomeal_mvp/proto/analytics/v1";
+
+// Analytics service provides data analysis and insights
 service AnalyticsService {
-  // GetDailySummary provides daily nutritional and activity summary
-  rpc GetDailySummary(GetDailySummaryRequest) returns (GetDailySummaryResponse);
+  // Get daily nutrition summary
+  rpc GetDailyNutritionSummary(GetDailyNutritionSummaryRequest) returns (GetDailyNutritionSummaryResponse);
+  
+  // Get weekly nutrition trends
+  rpc GetWeeklyNutritionTrends(GetWeeklyNutritionTrendsRequest) returns (GetWeeklyNutritionTrendsResponse);
+  
+  // Get monthly nutrition insights
+  rpc GetMonthlyNutritionInsights(GetMonthlyNutritionInsightsRequest) returns (GetMonthlyNutritionInsightsResponse);
+  
+  // Get weight progress analysis
+  rpc GetWeightProgressAnalysis(GetWeightProgressAnalysisRequest) returns (GetWeightProgressAnalysisResponse);
+  
+  // Get calorie balance analysis
+  rpc GetCalorieBalanceAnalysis(GetCalorieBalanceAnalysisRequest) returns (GetCalorieBalanceAnalysisResponse);
 }
 
-// GetDailySummaryRequest represents a request for daily summary
-message GetDailySummaryRequest {
-  string date = 1;  // Date in YYYY-MM-DD format
+// Daily nutrition summary request
+message GetDailyNutritionSummaryRequest {
+  string user_id = 1;
+  string date = 2; // YYYY-MM-DD format
 }
 
-// GetDailySummaryResponse contains the daily summary data
-message GetDailySummaryResponse {
-  double calories_intake = 1;    // Total calories consumed
-  double calories_burned = 2;    // Total calories burned
-  double protein = 3;            // Total protein consumed (grams)
-  double carbohydrate = 4;       // Total carbohydrate consumed (grams)
-  double fat = 5;                // Total fat consumed (grams)
+// Daily nutrition summary response
+message GetDailyNutritionSummaryResponse {
+  DailyNutritionSummary summary = 1;
+}
+
+// Weekly nutrition trends request
+message GetWeeklyNutritionTrendsRequest {
+  string user_id = 1;
+  string start_date = 2; // YYYY-MM-DD format
+  string end_date = 3;   // YYYY-MM-DD format
+}
+
+// Weekly nutrition trends response
+message GetWeeklyNutritionTrendsResponse {
+  repeated DailyNutritionSummary daily_summaries = 1;
+  NutritionTrends trends = 2;
+}
+
+// Monthly nutrition insights request
+message GetMonthlyNutritionInsightsRequest {
+  string user_id = 1;
+  string year = 2;  // YYYY format
+  string month = 3; // MM format
+}
+
+// Monthly nutrition insights response
+message GetMonthlyNutritionInsightsResponse {
+  MonthlyNutritionInsights insights = 1;
+}
+
+// Weight progress analysis request
+message GetWeightProgressAnalysisRequest {
+  string user_id = 1;
+  string start_date = 2; // YYYY-MM-DD format
+  string end_date = 3;   // YYYY-MM-DD format
+}
+
+// Weight progress analysis response
+message GetWeightProgressAnalysisResponse {
+  WeightProgressAnalysis analysis = 1;
+}
+
+// Calorie balance analysis request
+message GetCalorieBalanceAnalysisRequest {
+  string user_id = 1;
+  string start_date = 2; // YYYY-MM-DD format
+  string end_date = 3;   // YYYY-MM-DD format
+}
+
+// Calorie balance analysis response
+message GetCalorieBalanceAnalysisResponse {
+  CalorieBalanceAnalysis analysis = 1;
+}
+
+// Daily nutrition summary
+message DailyNutritionSummary {
+  string date = 1;
+  int32 calories_intake = 2;
+  int32 calories_burned = 3;
+  int32 calories_balance = 4;
+  int32 protein = 5;
+  int32 carbohydrate = 6;
+  int32 fat = 7;
+  int32 fiber = 8;
+  int32 sugar = 9;
+  int32 sodium = 10;
+  repeated MealSummary meals = 11;
+}
+
+// Meal summary
+message MealSummary {
+  string meal_type = 1; // breakfast, lunch, dinner, snack
+  int32 calories = 2;
+  int32 protein = 3;
+  int32 carbohydrate = 4;
+  int32 fat = 5;
+  repeated string food_items = 6;
+}
+
+// Nutrition trends
+message NutritionTrends {
+  double calories_avg = 1;
+  double protein_avg = 2;
+  double carbohydrate_avg = 3;
+  double fat_avg = 4;
+  double calories_trend = 5; // percentage change
+  double protein_trend = 6;
+  double carbohydrate_trend = 7;
+  double fat_trend = 8;
+}
+
+// Monthly nutrition insights
+message MonthlyNutritionInsights {
+  string year = 1;
+  string month = 2;
+  int32 total_calories = 3;
+  int32 avg_daily_calories = 4;
+  int32 total_protein = 5;
+  int32 avg_daily_protein = 6;
+  int32 total_carbohydrate = 7;
+  int32 avg_daily_carbohydrate = 8;
+  int32 total_fat = 9;
+  int32 avg_daily_fat = 10;
+  repeated string top_foods = 11;
+  repeated string recommendations = 12;
+}
+
+// Weight progress analysis
+message WeightProgressAnalysis {
+  string start_date = 1;
+  string end_date = 2;
+  double start_weight = 3;
+  double end_weight = 4;
+  double weight_change = 5;
+  double weight_change_percentage = 6;
+  double avg_weekly_change = 7;
+  repeated WeightDataPoint data_points = 8;
+  string trend = 9; // increasing, decreasing, stable
+}
+
+// Weight data point
+message WeightDataPoint {
+  string date = 1;
+  double weight = 2;
+}
+
+// Calorie balance analysis
+message CalorieBalanceAnalysis {
+  string start_date = 1;
+  string end_date = 2;
+  int32 total_calories_intake = 3;
+  int32 total_calories_burned = 4;
+  int32 total_calorie_balance = 5;
+  double avg_daily_balance = 6;
+  int32 days_in_deficit = 7;
+  int32 days_in_surplus = 8;
+  double deficit_percentage = 9;
+  repeated DailyBalance daily_balances = 10;
+}
+
+// Daily balance
+message DailyBalance {
+  string date = 1;
+  int32 calories_intake = 2;
+  int32 calories_burned = 3;
+  int32 balance = 4;
 }
