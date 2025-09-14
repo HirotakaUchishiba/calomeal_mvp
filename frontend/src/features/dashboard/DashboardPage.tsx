@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@apollo/client';
+import { Link } from 'react-router-dom';
 import { FoodLogModal } from '../records/FoodLogModal';
 import { ExerciseLogModal } from '../records/ExerciseLogModal';
 import { WeightLogModal } from '../records/WeightLogModal';
@@ -50,6 +51,19 @@ export const DashboardPage = () => {
               こんにちは、{user.signInDetails?.loginId || 'ユーザー'}さん
             </span>
           )}
+          <Link 
+            to="/analytics"
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              textDecoration: 'none',
+              borderRadius: '4px',
+              fontSize: '14px'
+            }}
+          >
+            📊 アナリティクス
+          </Link>
           <button 
             onClick={handleLogout}
             style={{
