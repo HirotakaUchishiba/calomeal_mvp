@@ -9,475 +9,116 @@ import (
 	"fmt"
 
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend"
-	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/bff/middleware"
-	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/auth"
-	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/log"
-	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/user"
 )
 
 // SignUp is the resolver for the signUp field.
 func (r *mutationResolver) SignUp(ctx context.Context, email string, password string) (*backend.SignUpResult, error) {
-	cognitoService, err := auth.NewCognitoService()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create cognito service: %w", err)
-	}
-
-	result, err := cognitoService.SignUp(ctx, email, password)
-	if err != nil {
-		return nil, fmt.Errorf("signup failed: %w", err)
-	}
-
-	return &backend.SignUpResult{
-		UserID:               *result.UserSub,
-		Email:                email,
-		ConfirmationRequired: !result.UserConfirmed,
-		Message:              "User registration initiated. Please check your email for confirmation code.",
-	}, nil
+	panic(fmt.Errorf("not implemented: SignUp - signUp"))
 }
 
 // ConfirmSignUp is the resolver for the confirmSignUp field.
 func (r *mutationResolver) ConfirmSignUp(ctx context.Context, email string, confirmationCode string) (bool, error) {
-	cognitoService, err := auth.NewCognitoService()
-	if err != nil {
-		return false, fmt.Errorf("failed to create cognito service: %w", err)
-	}
-
-	err = cognitoService.ConfirmSignUp(ctx, email, confirmationCode)
-	if err != nil {
-		return false, fmt.Errorf("confirmation failed: %w", err)
-	}
-
-	return true, nil
+	panic(fmt.Errorf("not implemented: ConfirmSignUp - confirmSignUp"))
 }
 
 // SignIn is the resolver for the signIn field.
 func (r *mutationResolver) SignIn(ctx context.Context, email string, password string) (*backend.AuthResult, error) {
-	cognitoService, err := auth.NewCognitoService()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create cognito service: %w", err)
-	}
-
-	authService := auth.NewService()
-
-	// Cognitoで認証
-	cognitoResult, err := cognitoService.SignIn(ctx, email, password)
-	if err != nil {
-		return nil, fmt.Errorf("signin failed: %w", err)
-	}
-
-	// Cognitoの結果からユーザー情報を取得
-	var userID, userEmail string
-	if cognitoResult.AuthenticationResult != nil && cognitoResult.AuthenticationResult.AccessToken != nil {
-		user, err := cognitoService.GetUser(ctx, *cognitoResult.AuthenticationResult.AccessToken)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get user info: %w", err)
-		}
-
-		// ユーザー属性から情報を抽出
-		for _, attr := range user.UserAttributes {
-			if *attr.Name == "sub" {
-				userID = *attr.Value
-			} else if *attr.Name == "email" {
-				userEmail = *attr.Value
-			}
-		}
-	}
-
-	// JWTトークンペアを生成
-	tokenPair, err := authService.GenerateTokenPair(ctx, userID, userEmail)
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate tokens: %w", err)
-	}
-
-	return &backend.AuthResult{
-		AccessToken:  tokenPair.AccessToken,
-		RefreshToken: tokenPair.RefreshToken,
-		ExpiresIn:    int(tokenPair.ExpiresIn),
-		TokenType:    tokenPair.TokenType,
-		User: &backend.User{
-			ID:    userID,
-			Email: userEmail,
-		},
-	}, nil
+	panic(fmt.Errorf("not implemented: SignIn - signIn"))
 }
 
 // SignOut is the resolver for the signOut field.
 func (r *mutationResolver) SignOut(ctx context.Context) (bool, error) {
-	// 認証されたユーザーの情報を取得
-	userID, ok := middleware.GetUserIDFromContext(ctx)
-	if !ok {
-		return false, fmt.Errorf("user not authenticated")
-	}
-
-	// トークンを無効化（実際の実装では、リクエストヘッダーからトークンを取得）
-	// ここでは簡易的にユーザーIDのみでログアウト処理
-	fmt.Printf("User %s signed out successfully\n", userID)
-
-	return true, nil
+	panic(fmt.Errorf("not implemented: SignOut - signOut"))
 }
 
 // RefreshToken is the resolver for the refreshToken field.
 func (r *mutationResolver) RefreshToken(ctx context.Context, refreshToken string) (*backend.AuthResult, error) {
-	authService := auth.NewService()
-
-	// リフレッシュトークンを使用して新しいトークンペアを生成
-	tokenPair, err := authService.RefreshToken(ctx, refreshToken)
-	if err != nil {
-		return nil, fmt.Errorf("token refresh failed: %w", err)
-	}
-
-	// トークンからユーザー情報を取得
-	claims, err := authService.ValidateToken(ctx, tokenPair.AccessToken)
-	if err != nil {
-		return nil, fmt.Errorf("failed to validate new token: %w", err)
-	}
-
-	return &backend.AuthResult{
-		AccessToken:  tokenPair.AccessToken,
-		RefreshToken: tokenPair.RefreshToken,
-		ExpiresIn:    int(tokenPair.ExpiresIn),
-		TokenType:    tokenPair.TokenType,
-		User: &backend.User{
-			ID:    claims.UserID,
-			Email: claims.Email,
-		},
-	}, nil
+	panic(fmt.Errorf("not implemented: RefreshToken - refreshToken"))
 }
 
 // ResetPassword is the resolver for the resetPassword field.
 func (r *mutationResolver) ResetPassword(ctx context.Context, email string) (bool, error) {
-	cognitoService, err := auth.NewCognitoService()
-	if err != nil {
-		return false, fmt.Errorf("failed to create cognito service: %w", err)
-	}
-
-	err = cognitoService.ResetPassword(ctx, email)
-	if err != nil {
-		return false, fmt.Errorf("password reset failed: %w", err)
-	}
-
-	return true, nil
+	panic(fmt.Errorf("not implemented: ResetPassword - resetPassword"))
 }
 
 // ConfirmResetPassword is the resolver for the confirmResetPassword field.
 func (r *mutationResolver) ConfirmResetPassword(ctx context.Context, email string, confirmationCode string, newPassword string) (bool, error) {
-	cognitoService, err := auth.NewCognitoService()
-	if err != nil {
-		return false, fmt.Errorf("failed to create cognito service: %w", err)
-	}
-
-	err = cognitoService.ConfirmResetPassword(ctx, email, confirmationCode, newPassword)
-	if err != nil {
-		return false, fmt.Errorf("password reset confirmation failed: %w", err)
-	}
-
-	return true, nil
+	panic(fmt.Errorf("not implemented: ConfirmResetPassword - confirmResetPassword"))
 }
 
 // CompleteOnboarding is the resolver for the completeOnboarding field.
 func (r *mutationResolver) CompleteOnboarding(ctx context.Context, profile backend.UserProfileInput, goal backend.UserGoalInput) (*backend.User, error) {
-	// 認証されたユーザーの情報を取得
-	userID, ok := middleware.GetUserIDFromContext(ctx)
-	if !ok {
-		return nil, fmt.Errorf("user not authenticated")
-	}
-
-	email, ok := middleware.GetEmailFromContext(ctx)
-	if !ok {
-		return nil, fmt.Errorf("user email not found")
-	}
-
-	// UserServiceの新しいインターフェースを使用
-	userProfile := user.UserProfileInput{
-		Height:        profile.Height,
-		Weight:        profile.Weight,
-		ActivityLevel: profile.ActivityLevel,
-	}
-	userGoal := user.UserGoalInput{
-		TargetWeight: goal.TargetWeight,
-		TargetDate:   goal.TargetDate,
-	}
-
-	err := r.Resolver.UserService.CompleteOnboarding(ctx, userID, userProfile, userGoal)
-	if err != nil {
-		return nil, fmt.Errorf("failed to complete onboarding: %w", err)
-	}
-
-	// 成功レスポンスを返す
-	return &backend.User{
-		ID:    userID,
-		Email: email,
-	}, nil
+	panic(fmt.Errorf("not implemented: CompleteOnboarding - completeOnboarding"))
 }
 
 // LogFood is the resolver for the logFood field.
 func (r *mutationResolver) LogFood(ctx context.Context, input backend.LogFoodInput) (*backend.FoodLog, error) {
-	// 認証されたユーザーの情報を取得
-	userID, ok := middleware.GetUserIDFromContext(ctx)
-	if !ok {
-		return nil, fmt.Errorf("user not authenticated")
-	}
-
-	// foodIdから食品情報を取得
-	fmt.Printf("LogFood resolver: Getting food with ID: %s\n", input.FoodID)
-	food, err := r.Resolver.FoodDataService.GetFoodByID(ctx, input.FoodID)
-	if err != nil {
-		fmt.Printf("LogFood resolver: Error getting food: %v\n", err)
-		return nil, fmt.Errorf("failed to get food by ID: %w", err)
-	}
-	fmt.Printf("LogFood resolver: Got food: %s\n", food.Name)
-
-	// 栄養素を計算（量 × 単位あたりの栄養素）
-	// 食品データベースの栄養素は100gあたりの値なので、入力された量に応じて計算
-	calories := input.Quantity * food.Calories / 100.0
-	protein := input.Quantity * food.Protein / 100.0
-	carbohydrate := input.Quantity * food.Carbohydrate / 100.0
-	fat := input.Quantity * food.Fat / 100.0
-
-	// 入力型をサービス層の型に変換
-	serviceInput := log.LogFoodInput{
-		FoodName:     food.Name,
-		Quantity:     input.Quantity,
-		Unit:         input.Unit,
-		Calories:     calories,
-		Protein:      protein,
-		Carbohydrate: carbohydrate,
-		Fat:          fat,
-		Date:         input.Date,
-	}
-
-	// LogServiceを呼び出す
-	logID, err := r.Resolver.LogService.LogFood(ctx, userID, serviceInput)
-	if err != nil {
-		return nil, err
-	}
-
-	// 成功レスポンスを返す
-	return &backend.FoodLog{
-		ID:           fmt.Sprintf("%d", logID),
-		FoodName:     food.Name,
-		Quantity:     input.Quantity,
-		Unit:         input.Unit,
-		Calories:     calories,
-		Protein:      protein,
-		Carbohydrate: carbohydrate,
-		Fat:          fat,
-		LoggedAt:     input.Date,
-	}, nil
+	panic(fmt.Errorf("not implemented: LogFood - logFood"))
 }
 
 // LogExercise is the resolver for the logExercise field.
 func (r *mutationResolver) LogExercise(ctx context.Context, input backend.LogExerciseInput) (*backend.ExerciseLog, error) {
-	// 認証されたユーザーの情報を取得
-	userID, ok := middleware.GetUserIDFromContext(ctx)
-	if !ok {
-		return nil, fmt.Errorf("user not authenticated")
-	}
-
-	// 入力型をサービス層の型に変換
-	serviceInput := log.LogExerciseInput{
-		ExerciseName:    input.ExerciseName,
-		DurationMinutes: input.DurationMinutes,
-		CaloriesBurned:  input.CaloriesBurned,
-		Date:            input.Date,
-	}
-
-	// LogServiceを呼び出す
-	logID, err := r.Resolver.LogService.LogExercise(ctx, userID, serviceInput)
-	if err != nil {
-		return nil, err
-	}
-
-	// 成功レスポンスを返す (ダミーデータ)
-	return &backend.ExerciseLog{
-		ID:              fmt.Sprintf("%d", logID),
-		ExerciseName:    input.ExerciseName,
-		DurationMinutes: input.DurationMinutes,
-		CaloriesBurned:  input.CaloriesBurned,
-		LoggedAt:        input.Date,
-	}, nil
+	panic(fmt.Errorf("not implemented: LogExercise - logExercise"))
 }
 
 // LogWeight is the resolver for the logWeight field.
 func (r *mutationResolver) LogWeight(ctx context.Context, weight float64, date string) (*backend.WeightLog, error) {
-	// 認証されたユーザーの情報を取得
-	userID, ok := middleware.GetUserIDFromContext(ctx)
-	if !ok {
-		return nil, fmt.Errorf("user not authenticated")
-	}
-
-	// 入力型をサービス層の型に変換
-	serviceInput := log.LogWeightInput{
-		Weight: weight,
-		Date:   date,
-	}
-
-	// LogServiceを呼び出す
-	logID, err := r.Resolver.LogService.LogWeight(ctx, userID, serviceInput)
-	if err != nil {
-		return nil, err
-	}
-
-	// 成功レスポンスを返す
-	return &backend.WeightLog{
-		ID:       fmt.Sprintf("%d", logID),
-		Weight:   weight,
-		LoggedAt: date,
-	}, nil
+	panic(fmt.Errorf("not implemented: LogWeight - logWeight"))
 }
 
 // SearchFood is the resolver for the searchFood field.
 func (r *queryResolver) SearchFood(ctx context.Context, query string) ([]*backend.Food, error) {
-	// FoodDataServiceを呼び出す
-	results, err := r.Resolver.FoodDataService.SearchFood(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-
-	// サービス層の型 (fooddata.Food) からGraphQLの型 (*backend.Food) へ変換
-	foods := make([]*backend.Food, 0, len(results))
-	for _, res := range results {
-		foods = append(foods, &backend.Food{
-			ID:           fmt.Sprintf("%d", res.ID),
-			Name:         res.Name,
-			Brand:        res.Brand,
-			Calories:     res.Calories,
-			Protein:      res.Protein,
-			Carbohydrate: res.Carbohydrate,
-			Fat:          res.Fat,
-		})
-	}
-	return foods, nil
+	panic(fmt.Errorf("not implemented: SearchFood - searchFood"))
 }
 
 // GetFoodByID is the resolver for the getFoodById field.
 func (r *queryResolver) GetFoodByID(ctx context.Context, foodID string) (*backend.Food, error) {
-	// FoodDataServiceを呼び出す
-	food, err := r.Resolver.FoodDataService.GetFoodByID(ctx, foodID)
-	if err != nil {
-		return nil, err
-	}
-
-	// サービス層の型 (fooddata.Food) からGraphQLの型 (*backend.Food) へ変換
-	return &backend.Food{
-		ID:           fmt.Sprintf("%d", food.ID),
-		Name:         food.Name,
-		Brand:        food.Brand,
-		Calories:     food.Calories,
-		Protein:      food.Protein,
-		Carbohydrate: food.Carbohydrate,
-		Fat:          food.Fat,
-	}, nil
+	panic(fmt.Errorf("not implemented: GetFoodByID - getFoodById"))
 }
 
 // DailySummary is the resolver for the dailySummary field.
 func (r *queryResolver) DailySummary(ctx context.Context, date string) (*backend.DailySummary, error) {
-	// 認証されたユーザーの情報を取得
-	userID, ok := middleware.GetUserIDFromContext(ctx)
-	if !ok {
-		return nil, fmt.Errorf("user not authenticated")
-	}
-
-	// LogServiceから日次サマリーを取得
-	summary, err := r.Resolver.LogService.GetDailySummary(ctx, userID, date)
-	if err != nil {
-		return nil, err
-	}
-
-	// サービス層の型からGraphQLの型に変換
-	return &backend.DailySummary{
-		CaloriesIntake: summary.CaloriesIntake,
-		CaloriesBurned: summary.CaloriesBurned,
-		Protein:        summary.Protein,
-		Carbohydrate:   summary.Carbohydrate,
-		Fat:            summary.Fat,
-	}, nil
+	panic(fmt.Errorf("not implemented: DailySummary - dailySummary"))
 }
 
 // FoodLogs is the resolver for the foodLogs field.
 func (r *queryResolver) FoodLogs(ctx context.Context, date string) ([]*backend.FoodLog, error) {
-	// 認証されたユーザーの情報を取得
-	userID, ok := middleware.GetUserIDFromContext(ctx)
-	if !ok {
-		return nil, fmt.Errorf("user not authenticated")
-	}
-
-	// LogServiceから食事記録を取得
-	logs, err := r.Resolver.LogService.GetFoodLogs(ctx, userID, date)
-	if err != nil {
-		return nil, err
-	}
-
-	// サービス層の型からGraphQLの型に変換
-	foodLogs := make([]*backend.FoodLog, 0, len(logs))
-	for _, log := range logs {
-		foodLogs = append(foodLogs, &backend.FoodLog{
-			ID:           fmt.Sprintf("%d", log.ID),
-			FoodName:     log.FoodName,
-			Quantity:     log.Quantity,
-			Unit:         log.Unit,
-			Calories:     log.Calories,
-			Protein:      log.Protein,
-			Carbohydrate: log.Carbohydrate,
-			Fat:          log.Fat,
-			LoggedAt:     log.LoggedAt,
-		})
-	}
-	return foodLogs, nil
+	panic(fmt.Errorf("not implemented: FoodLogs - foodLogs"))
 }
 
 // ExerciseLogs is the resolver for the exerciseLogs field.
 func (r *queryResolver) ExerciseLogs(ctx context.Context, date string) ([]*backend.ExerciseLog, error) {
-	// 認証されたユーザーの情報を取得
-	userID, ok := middleware.GetUserIDFromContext(ctx)
-	if !ok {
-		return nil, fmt.Errorf("user not authenticated")
-	}
-
-	// LogServiceから運動記録を取得
-	logs, err := r.Resolver.LogService.GetExerciseLogs(ctx, userID, date)
-	if err != nil {
-		return nil, err
-	}
-
-	// サービス層の型からGraphQLの型に変換
-	exerciseLogs := make([]*backend.ExerciseLog, 0, len(logs))
-	for _, log := range logs {
-		exerciseLogs = append(exerciseLogs, &backend.ExerciseLog{
-			ID:              fmt.Sprintf("%d", log.ID),
-			ExerciseName:    log.ExerciseName,
-			DurationMinutes: log.DurationMinutes,
-			CaloriesBurned:  log.CaloriesBurned,
-			LoggedAt:        log.LoggedAt,
-		})
-	}
-	return exerciseLogs, nil
+	panic(fmt.Errorf("not implemented: ExerciseLogs - exerciseLogs"))
 }
 
 // WeightLogs is the resolver for the weightLogs field.
 func (r *queryResolver) WeightLogs(ctx context.Context, date string) ([]*backend.WeightLog, error) {
-	// 認証されたユーザーの情報を取得
-	userID, ok := middleware.GetUserIDFromContext(ctx)
-	if !ok {
-		return nil, fmt.Errorf("user not authenticated")
-	}
+	panic(fmt.Errorf("not implemented: WeightLogs - weightLogs"))
+}
 
-	// LogServiceから体重記録を取得
-	logs, err := r.Resolver.LogService.GetWeightLogs(ctx, userID, date)
-	if err != nil {
-		return nil, err
-	}
+// NutritionSummary is the resolver for the nutritionSummary field.
+func (r *queryResolver) NutritionSummary(ctx context.Context, date string) (*backend.NutritionSummary, error) {
+	panic(fmt.Errorf("not implemented: NutritionSummary - nutritionSummary"))
+}
 
-	// サービス層の型からGraphQLの型に変換
-	weightLogs := make([]*backend.WeightLog, 0, len(logs))
-	for _, log := range logs {
-		weightLogs = append(weightLogs, &backend.WeightLog{
-			ID:       fmt.Sprintf("%d", log.ID),
-			Weight:   log.Weight,
-			LoggedAt: log.LoggedAt,
-		})
-	}
-	return weightLogs, nil
+// NutritionTrends is the resolver for the nutritionTrends field.
+func (r *queryResolver) NutritionTrends(ctx context.Context, startDate string, endDate string) (*backend.NutritionTrends, error) {
+	panic(fmt.Errorf("not implemented: NutritionTrends - nutritionTrends"))
+}
+
+// NutritionInsights is the resolver for the nutritionInsights field.
+func (r *queryResolver) NutritionInsights(ctx context.Context, year string, month string) (*backend.NutritionInsights, error) {
+	panic(fmt.Errorf("not implemented: NutritionInsights - nutritionInsights"))
+}
+
+// WeightProgress is the resolver for the weightProgress field.
+func (r *queryResolver) WeightProgress(ctx context.Context, startDate string, endDate string) (*backend.WeightProgress, error) {
+	panic(fmt.Errorf("not implemented: WeightProgress - weightProgress"))
+}
+
+// CalorieBalance is the resolver for the calorieBalance field.
+func (r *queryResolver) CalorieBalance(ctx context.Context, startDate string, endDate string) (*backend.CalorieBalance, error) {
+	panic(fmt.Errorf("not implemented: CalorieBalance - calorieBalance"))
 }
 
 // Mutation returns backend.MutationResolver implementation.

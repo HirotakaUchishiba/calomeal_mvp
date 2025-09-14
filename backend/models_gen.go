@@ -11,6 +11,42 @@ type AuthResult struct {
 	User         *User  `json:"user"`
 }
 
+// カロリーバランスを表す型
+type CalorieBalance struct {
+	// 開始日
+	StartDate string `json:"startDate"`
+	// 終了日
+	EndDate string `json:"endDate"`
+	// 総摂取カロリー
+	TotalCaloriesIntake int `json:"totalCaloriesIntake"`
+	// 総消費カロリー
+	TotalCaloriesBurned int `json:"totalCaloriesBurned"`
+	// 総カロリーバランス
+	TotalCalorieBalance int `json:"totalCalorieBalance"`
+	// 平均日次バランス
+	AvgDailyBalance float64 `json:"avgDailyBalance"`
+	// 赤字日数
+	DaysInDeficit int `json:"daysInDeficit"`
+	// 黒字日数
+	DaysInSurplus int `json:"daysInSurplus"`
+	// 赤字率(%)
+	DeficitPercentage float64 `json:"deficitPercentage"`
+	// 日次バランス
+	DailyBalances []*DailyBalance `json:"dailyBalances"`
+}
+
+// 日次バランスを表す型
+type DailyBalance struct {
+	// 日付
+	Date string `json:"date"`
+	// 摂取カロリー
+	CaloriesIntake int `json:"caloriesIntake"`
+	// 消費カロリー
+	CaloriesBurned int `json:"caloriesBurned"`
+	// バランス
+	Balance int `json:"balance"`
+}
+
 // 一日の栄養サマリーを表す型
 type DailySummary struct {
 	// 総摂取カロリー
@@ -82,7 +118,99 @@ type LogFoodInput struct {
 	Date string `json:"date"`
 }
 
+// 食事サマリーを表す型
+type MealSummary struct {
+	// 食事タイプ
+	MealType string `json:"mealType"`
+	// カロリー
+	Calories int `json:"calories"`
+	// タンパク質(g)
+	Protein int `json:"protein"`
+	// 炭水化物(g)
+	Carbohydrate int `json:"carbohydrate"`
+	// 脂質(g)
+	Fat int `json:"fat"`
+	// 食品リスト
+	FoodItems []string `json:"foodItems"`
+}
+
 type Mutation struct {
+}
+
+// 月次栄養インサイトを表す型
+type NutritionInsights struct {
+	// 年
+	Year string `json:"year"`
+	// 月
+	Month string `json:"month"`
+	// 総カロリー
+	TotalCalories int `json:"totalCalories"`
+	// 平均日次カロリー
+	AvgDailyCalories int `json:"avgDailyCalories"`
+	// 総タンパク質
+	TotalProtein int `json:"totalProtein"`
+	// 平均日次タンパク質
+	AvgDailyProtein int `json:"avgDailyProtein"`
+	// 総炭水化物
+	TotalCarbohydrate int `json:"totalCarbohydrate"`
+	// 平均日次炭水化物
+	AvgDailyCarbohydrate int `json:"avgDailyCarbohydrate"`
+	// 総脂質
+	TotalFat int `json:"totalFat"`
+	// 平均日次脂質
+	AvgDailyFat int `json:"avgDailyFat"`
+	// よく食べた食品
+	TopFoods []string `json:"topFoods"`
+	// 推奨事項
+	Recommendations []string `json:"recommendations"`
+}
+
+// 詳細な栄養サマリーを表す型
+type NutritionSummary struct {
+	// 日付
+	Date string `json:"date"`
+	// 総摂取カロリー
+	CaloriesIntake int `json:"caloriesIntake"`
+	// 総消費カロリー
+	CaloriesBurned int `json:"caloriesBurned"`
+	// カロリーバランス
+	CaloriesBalance int `json:"caloriesBalance"`
+	// タンパク質(g)
+	Protein int `json:"protein"`
+	// 炭水化物(g)
+	Carbohydrate int `json:"carbohydrate"`
+	// 脂質(g)
+	Fat int `json:"fat"`
+	// 食物繊維(g)
+	Fiber int `json:"fiber"`
+	// 糖質(g)
+	Sugar int `json:"sugar"`
+	// ナトリウム(mg)
+	Sodium int `json:"sodium"`
+	// 食事サマリー
+	Meals []*MealSummary `json:"meals"`
+}
+
+// 栄養トレンドを表す型
+type NutritionTrends struct {
+	// 日次サマリー
+	DailySummaries []*NutritionSummary `json:"dailySummaries"`
+	// 平均カロリー
+	CaloriesAvg float64 `json:"caloriesAvg"`
+	// 平均タンパク質
+	ProteinAvg float64 `json:"proteinAvg"`
+	// 平均炭水化物
+	CarbohydrateAvg float64 `json:"carbohydrateAvg"`
+	// 平均脂質
+	FatAvg float64 `json:"fatAvg"`
+	// カロリートレンド(%)
+	CaloriesTrend float64 `json:"caloriesTrend"`
+	// タンパク質トレンド(%)
+	ProteinTrend float64 `json:"proteinTrend"`
+	// 炭水化物トレンド(%)
+	CarbohydrateTrend float64 `json:"carbohydrateTrend"`
+	// 脂質トレンド(%)
+	FatTrend float64 `json:"fatTrend"`
 }
 
 type Query struct {
@@ -114,9 +242,39 @@ type UserProfileInput struct {
 	ActivityLevel string  `json:"activityLevel"`
 }
 
+// 体重データポイントを表す型
+type WeightDataPoint struct {
+	// 日付
+	Date string `json:"date"`
+	// 体重
+	Weight float64 `json:"weight"`
+}
+
 // 体重記録を表す型
 type WeightLog struct {
 	ID       string  `json:"id"`
 	Weight   float64 `json:"weight"`
 	LoggedAt string  `json:"loggedAt"`
+}
+
+// 体重進捗を表す型
+type WeightProgress struct {
+	// 開始日
+	StartDate string `json:"startDate"`
+	// 終了日
+	EndDate string `json:"endDate"`
+	// 開始体重
+	StartWeight float64 `json:"startWeight"`
+	// 終了体重
+	EndWeight float64 `json:"endWeight"`
+	// 体重変化
+	WeightChange float64 `json:"weightChange"`
+	// 体重変化率(%)
+	WeightChangePercentage float64 `json:"weightChangePercentage"`
+	// 平均週次変化
+	AvgWeeklyChange float64 `json:"avgWeeklyChange"`
+	// データポイント
+	DataPoints []*WeightDataPoint `json:"dataPoints"`
+	// トレンド
+	Trend string `json:"trend"`
 }

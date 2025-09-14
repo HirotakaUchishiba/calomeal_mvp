@@ -20,6 +20,21 @@ type Query {
 
   "指定された日付のユーザーの体重記録を取得します"
   weightLogs(date: String!): [WeightLog!]! @auth
+
+  "指定された日付の栄養サマリーを取得します"
+  nutritionSummary(date: String!): NutritionSummary! @auth
+
+  "指定された期間の栄養トレンドを取得します"
+  nutritionTrends(startDate: String!, endDate: String!): NutritionTrends! @auth
+
+  "指定された月の栄養インサイトを取得します"
+  nutritionInsights(year: String!, month: String!): NutritionInsights! @auth
+
+  "指定された期間の体重進捗分析を取得します"
+  weightProgress(startDate: String!, endDate: String!): WeightProgress! @auth
+
+  "指定された期間のカロリーバランス分析を取得します"
+  calorieBalance(startDate: String!, endDate: String!): CalorieBalance! @auth
 }
 
 type Mutation {
@@ -171,4 +186,162 @@ type DailySummary {
   "脂質摂取量"
   fat: Float!
   # TODO: 目標値も後で追加する
+}
+
+"詳細な栄養サマリーを表す型"
+type NutritionSummary {
+  "日付"
+  date: String!
+  "総摂取カロリー"
+  caloriesIntake: Int!
+  "総消費カロリー"
+  caloriesBurned: Int!
+  "カロリーバランス"
+  caloriesBalance: Int!
+  "タンパク質(g)"
+  protein: Int!
+  "炭水化物(g)"
+  carbohydrate: Int!
+  "脂質(g)"
+  fat: Int!
+  "食物繊維(g)"
+  fiber: Int!
+  "糖質(g)"
+  sugar: Int!
+  "ナトリウム(mg)"
+  sodium: Int!
+  "食事サマリー"
+  meals: [MealSummary!]!
+}
+
+"食事サマリーを表す型"
+type MealSummary {
+  "食事タイプ"
+  mealType: String!
+  "カロリー"
+  calories: Int!
+  "タンパク質(g)"
+  protein: Int!
+  "炭水化物(g)"
+  carbohydrate: Int!
+  "脂質(g)"
+  fat: Int!
+  "食品リスト"
+  foodItems: [String!]!
+}
+
+"栄養トレンドを表す型"
+type NutritionTrends {
+  "日次サマリー"
+  dailySummaries: [NutritionSummary!]!
+  "平均カロリー"
+  caloriesAvg: Float!
+  "平均タンパク質"
+  proteinAvg: Float!
+  "平均炭水化物"
+  carbohydrateAvg: Float!
+  "平均脂質"
+  fatAvg: Float!
+  "カロリートレンド(%)"
+  caloriesTrend: Float!
+  "タンパク質トレンド(%)"
+  proteinTrend: Float!
+  "炭水化物トレンド(%)"
+  carbohydrateTrend: Float!
+  "脂質トレンド(%)"
+  fatTrend: Float!
+}
+
+"月次栄養インサイトを表す型"
+type NutritionInsights {
+  "年"
+  year: String!
+  "月"
+  month: String!
+  "総カロリー"
+  totalCalories: Int!
+  "平均日次カロリー"
+  avgDailyCalories: Int!
+  "総タンパク質"
+  totalProtein: Int!
+  "平均日次タンパク質"
+  avgDailyProtein: Int!
+  "総炭水化物"
+  totalCarbohydrate: Int!
+  "平均日次炭水化物"
+  avgDailyCarbohydrate: Int!
+  "総脂質"
+  totalFat: Int!
+  "平均日次脂質"
+  avgDailyFat: Int!
+  "よく食べた食品"
+  topFoods: [String!]!
+  "推奨事項"
+  recommendations: [String!]!
+}
+
+"体重進捗を表す型"
+type WeightProgress {
+  "開始日"
+  startDate: String!
+  "終了日"
+  endDate: String!
+  "開始体重"
+  startWeight: Float!
+  "終了体重"
+  endWeight: Float!
+  "体重変化"
+  weightChange: Float!
+  "体重変化率(%)"
+  weightChangePercentage: Float!
+  "平均週次変化"
+  avgWeeklyChange: Float!
+  "データポイント"
+  dataPoints: [WeightDataPoint!]!
+  "トレンド"
+  trend: String!
+}
+
+"体重データポイントを表す型"
+type WeightDataPoint {
+  "日付"
+  date: String!
+  "体重"
+  weight: Float!
+}
+
+"カロリーバランスを表す型"
+type CalorieBalance {
+  "開始日"
+  startDate: String!
+  "終了日"
+  endDate: String!
+  "総摂取カロリー"
+  totalCaloriesIntake: Int!
+  "総消費カロリー"
+  totalCaloriesBurned: Int!
+  "総カロリーバランス"
+  totalCalorieBalance: Int!
+  "平均日次バランス"
+  avgDailyBalance: Float!
+  "赤字日数"
+  daysInDeficit: Int!
+  "黒字日数"
+  daysInSurplus: Int!
+  "赤字率(%)"
+  deficitPercentage: Float!
+  "日次バランス"
+  dailyBalances: [DailyBalance!]!
+}
+
+"日次バランスを表す型"
+type DailyBalance {
+  "日付"
+  date: String!
+  "摂取カロリー"
+  caloriesIntake: Int!
+  "消費カロリー"
+  caloriesBurned: Int!
+  "バランス"
+  balance: Int!
 }
