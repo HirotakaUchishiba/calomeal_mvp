@@ -11,6 +11,7 @@ import (
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend"
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/bff/middleware"
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/bff/resolvers"
+	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/analytics"
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/auth"
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/fooddata"
 	logsvc "github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/log"
@@ -84,11 +85,20 @@ func main() {
 	}
 	defer logsClient.Close()
 
+	// analytics gRPCクライアントの初期化
+	analyticsServiceAddr := getenv("ANALYTICS_SERVICE_ADDR", "localhost:50053")
+	analyticsClient, err := analytics.NewGRPCClient(analyticsServiceAddr)
+	if err != nil {
+		log.Fatal("Failed to create analytics gRPC client:", err)
+	}
+	defer analyticsClient.Close()
+
 	// リゾルバのインスタンスを作成し、各サービスを注入（依存性の注入）
 	resolver := &resolvers.Resolver{
-		UserService:     user.NewService(db),
-		FoodDataService: foodDataClient, // gRPCクライアントを使用
-		LogService:      logsClient,     // gRPCクライアントを使用
+		UserService:      user.NewService(db),
+		FoodDataService:  foodDataClient,  // gRPCクライアントを使用
+		LogService:       logsClient,      // gRPCクライアントを使用
+		AnalyticsService: analyticsClient, // gRPCクライアントを使用
 	}
 
 	cfg := backend.Config{
