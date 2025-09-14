@@ -2,8 +2,8 @@
 package resolvers
 
 import (
-	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/fooddata" // 追加
-	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/log"      // 追加
+	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/fooddata"
+	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/log"
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/user"
 )
 

@@ -10,11 +10,11 @@ RUN apk add --no-cache git
 # go.modとgo.sumをコピー
 COPY go.mod go.sum ./
 
-# 依存関係をダウンロード
-RUN go mod download
-
 # ソースコードをコピー
 COPY . .
+
+# 依存関係をダウンロード（protoはボリュームマウントで提供）
+RUN go mod download
 
 # プロトコルバッファの生成（必要に応じて）
 # RUN protoc --go_out=. --go_opt=paths=source_relative \

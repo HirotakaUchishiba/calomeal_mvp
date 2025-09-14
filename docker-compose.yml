@@ -20,6 +20,7 @@ services:
       - "8080:8080"
     volumes:
       - ./backend:/app
+      - ./proto:/app/proto
     depends_on:
       - db
     env_file:

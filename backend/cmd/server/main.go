@@ -62,10 +62,18 @@ func main() {
 	// 認証ミドルウェアを初期化
 	middleware.InitAuthMiddleware(authService)
 
+	// gRPCクライアントの初期化
+	foodServiceAddr := getenv("FOOD_SERVICE_ADDR", "localhost:50051")
+	foodDataClient, err := fooddata.NewGRPCClient(foodServiceAddr)
+	if err != nil {
+		log.Fatal("Failed to create food gRPC client:", err)
+	}
+	defer foodDataClient.Close()
+
 	// リゾルバのインスタンスを作成し、各サービスを注入（依存性の注入）
 	resolver := &resolvers.Resolver{
 		UserService:     user.NewService(db),
-		FoodDataService: fooddata.NewService(db),
+		FoodDataService: foodDataClient, // gRPCクライアントを使用
 		LogService:      logsvc.NewService(db),
 	}
 
