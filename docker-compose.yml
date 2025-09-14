@@ -25,7 +25,20 @@ services:
     env_file:
       - ./.env
 
-  # 3. フロントエンド (React)
+  # 3. Foods gRPC Service
+  foods-service:
+    build: ./services/foods
+    ports:
+      - "50051:50051"
+    volumes:
+      - ./services/foods:/app
+      - ./proto:/app/proto
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+
+  # 4. フロントエンド (React)
   frontend:
     build: ./frontend
     ports:

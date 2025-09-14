@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package foods.v1;
+option go_package = "github.com/HirotakaUchishiba/calomeal_mvp/proto/foods/v1;foodspb";
+
+// FoodService provides food search and management functionality
+service FoodService {
+  // SearchFoods searches for foods by keyword query
+  rpc SearchFoods(SearchFoodsRequest) returns (SearchFoodsResponse);
+  
+  // GetFoodById retrieves a specific food by ID
+  rpc GetFoodById(GetFoodByIdRequest) returns (GetFoodByIdResponse);
+}
+
+// SearchFoodsRequest represents a food search request
+message SearchFoodsRequest {
+  string query = 1;  // Search keyword
+  int32 limit = 2;   // Maximum number of results (default: 20)
+}
+
+// SearchFoodsResponse contains the search results
+message SearchFoodsResponse {
+  repeated Food foods = 1;  // List of matching foods
+}
+
+// GetFoodByIdRequest represents a request to get food by ID
+message GetFoodByIdRequest {
+  string food_id = 1;  // Food ID to retrieve
+}
+
+// GetFoodByIdResponse contains the requested food
+message GetFoodByIdResponse {
+  Food food = 1;  // The requested food
+}
+
+// Food represents a food item with nutritional information
+message Food {
+  string id = 1;           // Unique food identifier
+  string name = 2;         // Food name
+  string brand = 3;        // Brand name (optional)
+  double calories = 4;     // Calories per 100g
+  double protein = 5;      // Protein per 100g (grams)
+  double carbohydrate = 6; // Carbohydrate per 100g (grams)
+  double fat = 7;          // Fat per 100g (grams)
+}
