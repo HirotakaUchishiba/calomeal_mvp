@@ -15,9 +15,9 @@ import (
 type ContextKey string
 
 const (
-	UserIDKey  ContextKey = "user_id"
-	EmailKey   ContextKey = "email"
-	ClaimsKey  ContextKey = "claims"
+	UserIDKey ContextKey = "user_id"
+	EmailKey  ContextKey = "email"
+	ClaimsKey ContextKey = "claims"
 )
 
 // AuthService is injected into the middleware
@@ -41,53 +41,53 @@ func Auth(ctx context.Context, obj interface{}, next graphql.Resolver) (interfac
 			} else {
 				// 認証ヘッダーがない場合はダミーユーザーを設定
 				fmt.Println("Auth directive: Development mode - using dummy user")
-				ctx = context.WithValue(ctx, UserIDKey, "dev-user-123")
+				ctx = context.WithValue(ctx, UserIDKey, "550e8400-e29b-41d4-a716-446655440000")
 				ctx = context.WithValue(ctx, EmailKey, "dev@example.com")
 				return next(ctx)
 			}
 		} else {
 			// コンテキストがない場合はダミーユーザーを設定
 			fmt.Println("Auth directive: Development mode - using dummy user")
-			ctx = context.WithValue(ctx, UserIDKey, "dev-user-123")
+			ctx = context.WithValue(ctx, UserIDKey, "550e8400-e29b-41d4-a716-446655440000")
 			ctx = context.WithValue(ctx, EmailKey, "dev@example.com")
 			return next(ctx)
 		}
 	}
-	
+
 	// 本番環境ではJWT認証を実行
 	if authService == nil {
 		return nil, fmt.Errorf("auth service not initialized")
 	}
-	
+
 	// GraphQL contextからHTTP requestを取得
 	reqCtx := graphql.GetOperationContext(ctx)
 	if reqCtx == nil {
 		return nil, fmt.Errorf("no operation context found")
 	}
-	
+
 	// HTTP requestからAuthorization headerを取得
 	authHeader := reqCtx.Headers.Get("Authorization")
 	if authHeader == "" {
 		return nil, fmt.Errorf("authorization header is required")
 	}
-	
+
 	// Bearer tokenを抽出
 	tokenString := extractBearerToken(authHeader)
 	if tokenString == "" {
 		return nil, fmt.Errorf("invalid authorization header format")
 	}
-	
+
 	// JWT tokenを検証
 	claims, err := authService.ValidateToken(ctx, tokenString)
 	if err != nil {
 		return nil, fmt.Errorf("invalid token: %w", err)
 	}
-	
+
 	// ユーザー情報をcontextに追加
 	ctx = context.WithValue(ctx, UserIDKey, claims.UserID)
 	ctx = context.WithValue(ctx, EmailKey, claims.Email)
 	ctx = context.WithValue(ctx, ClaimsKey, claims)
-	
+
 	fmt.Printf("Auth directive: User authenticated - ID: %s, Email: %s\n", claims.UserID, claims.Email)
 	return next(ctx)
 }

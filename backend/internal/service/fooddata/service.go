@@ -4,6 +4,7 @@ package fooddata
 import (
 	"context"
 	"database/sql"
+	"fmt"
 )
 
 // Foodはデータベースのfoodsテーブルのレコードを表します
@@ -20,7 +21,7 @@ type Food struct {
 // Serviceは食品データ関連のビジネスロジックのインターフェースです
 type Service interface {
 	SearchFood(ctx context.Context, query string) ([]Food, error)
-	// TODO: GetFoodByIDのようなメソッドも後で必要になります
+	GetFoodByID(ctx context.Context, foodID string) (*Food, error)
 }
 
 type service struct {
@@ -75,4 +76,38 @@ func (s *service) SearchFood(ctx context.Context, query string) ([]Food, error) 
 	}
 
 	return foods, nil
+}
+
+// GetFoodByIDはIDで食品を取得します
+func (s *service) GetFoodByID(ctx context.Context, foodID string) (*Food, error) {
+	fmt.Printf("GetFoodByID called with foodID: %s\n", foodID)
+
+	const query = `
+		SELECT id, name, brand, calories, protein, carbohydrate, fat
+		FROM foods 
+		WHERE id = $1
+	`
+
+	var food Food
+	err := s.db.QueryRowContext(ctx, query, foodID).Scan(
+		&food.ID,
+		&food.Name,
+		&food.Brand,
+		&food.Calories,
+		&food.Protein,
+		&food.Carbohydrate,
+		&food.Fat,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Printf("Food with ID %s not found\n", foodID)
+			return nil, fmt.Errorf("food with ID %s not found", foodID)
+		}
+		fmt.Printf("Database error: %v\n", err)
+		return nil, err
+	}
+
+	fmt.Printf("Found food: %s (ID: %d)\n", food.Name, food.ID)
+	return &food, nil
 }
