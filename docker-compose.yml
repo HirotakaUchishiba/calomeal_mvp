@@ -39,7 +39,20 @@ services:
     env_file:
       - ./.env
 
-  # 4. フロントエンド (React)
+  # 4. Logs gRPC Service
+  logs-service:
+    build: ./services/logs
+    ports:
+      - "50052:50052"
+    volumes:
+      - ./services/logs:/app
+      - ./proto:/app/proto
+    depends_on:
+      - db
+    env_file:
+      - ./.env
+
+  # 5. フロントエンド (React)
   frontend:
     build: ./frontend
     ports:
