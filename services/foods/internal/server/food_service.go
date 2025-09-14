@@ -3,8 +3,6 @@ package server
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"strings"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
