@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	analyticspb "github.com/HirotakaUchishiba/calomeal_mvp/proto/analytics/v1"
+	analyticspb "github.com/HirotakaUchishiba/calomeal_mvp/services/analytics/internal/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
