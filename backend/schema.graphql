@@ -6,6 +6,9 @@ type Query {
   "キーワードで食品を検索します (内部データベース)"
   searchFood(query: String!): [Food!]! @auth
 
+  "IDで食品を取得します"
+  getFoodById(foodId: ID!): Food @auth
+
   "指定された日付のユーザーの日次サマリーを取得します"
   dailySummary(date: String!): DailySummary! @auth
 

@@ -218,23 +218,25 @@ func (r *mutationResolver) LogFood(ctx context.Context, input backend.LogFoodInp
 		return nil, fmt.Errorf("user not authenticated")
 	}
 
-	// foodIdから食品情報を取得（TODO: 実際の食品データベースから取得）
-	// 現時点ではダミーデータを使用
-	foodName := "選択された食品"
-	caloriesPerUnit := 100.0
-	proteinPerUnit := 10.0
-	carbohydratePerUnit := 20.0
-	fatPerUnit := 5.0
+	// foodIdから食品情報を取得
+	fmt.Printf("LogFood resolver: Getting food with ID: %s\n", input.FoodID)
+	food, err := r.Resolver.FoodDataService.GetFoodByID(ctx, input.FoodID)
+	if err != nil {
+		fmt.Printf("LogFood resolver: Error getting food: %v\n", err)
+		return nil, fmt.Errorf("failed to get food by ID: %w", err)
+	}
+	fmt.Printf("LogFood resolver: Got food: %s\n", food.Name)
 
 	// 栄養素を計算（量 × 単位あたりの栄養素）
-	calories := input.Quantity * caloriesPerUnit
-	protein := input.Quantity * proteinPerUnit
-	carbohydrate := input.Quantity * carbohydratePerUnit
-	fat := input.Quantity * fatPerUnit
+	// 食品データベースの栄養素は100gあたりの値なので、入力された量に応じて計算
+	calories := input.Quantity * food.Calories / 100.0
+	protein := input.Quantity * food.Protein / 100.0
+	carbohydrate := input.Quantity * food.Carbohydrate / 100.0
+	fat := input.Quantity * food.Fat / 100.0
 
 	// 入力型をサービス層の型に変換
 	serviceInput := log.LogFoodInput{
-		FoodName:     foodName,
+		FoodName:     food.Name,
 		Quantity:     input.Quantity,
 		Unit:         input.Unit,
 		Calories:     calories,
@@ -253,7 +255,7 @@ func (r *mutationResolver) LogFood(ctx context.Context, input backend.LogFoodInp
 	// 成功レスポンスを返す
 	return &backend.FoodLog{
 		ID:           fmt.Sprintf("%d", logID),
-		FoodName:     foodName,
+		FoodName:     food.Name,
 		Quantity:     input.Quantity,
 		Unit:         input.Unit,
 		Calories:     calories,
@@ -346,6 +348,26 @@ func (r *queryResolver) SearchFood(ctx context.Context, query string) ([]*backen
 		})
 	}
 	return foods, nil
+}
+
+// GetFoodByID is the resolver for the getFoodById field.
+func (r *queryResolver) GetFoodByID(ctx context.Context, foodID string) (*backend.Food, error) {
+	// FoodDataServiceを呼び出す
+	food, err := r.Resolver.FoodDataService.GetFoodByID(ctx, foodID)
+	if err != nil {
+		return nil, err
+	}
+
+	// サービス層の型 (fooddata.Food) からGraphQLの型 (*backend.Food) へ変換
+	return &backend.Food{
+		ID:           fmt.Sprintf("%d", food.ID),
+		Name:         food.Name,
+		Brand:        food.Brand,
+		Calories:     food.Calories,
+		Protein:      food.Protein,
+		Carbohydrate: food.Carbohydrate,
+		Fat:          food.Fat,
+	}, nil
 }
 
 // DailySummary is the resolver for the dailySummary field.

@@ -111,6 +111,7 @@ type ComplexityRoot struct {
 		DailySummary func(childComplexity int, date string) int
 		ExerciseLogs func(childComplexity int, date string) int
 		FoodLogs     func(childComplexity int, date string) int
+		GetFoodByID  func(childComplexity int, foodID string) int
 		SearchFood   func(childComplexity int, query string) int
 		WeightLogs   func(childComplexity int, date string) int
 	}
@@ -149,6 +150,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	SearchFood(ctx context.Context, query string) ([]*Food, error)
+	GetFoodByID(ctx context.Context, foodID string) (*Food, error)
 	DailySummary(ctx context.Context, date string) (*DailySummary, error)
 	FoodLogs(ctx context.Context, date string) ([]*FoodLog, error)
 	ExerciseLogs(ctx context.Context, date string) ([]*ExerciseLog, error)
@@ -554,6 +556,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.FoodLogs(childComplexity, args["date"].(string)), true
 
+	case "Query.getFoodById":
+		if e.complexity.Query.GetFoodByID == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getFoodById_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetFoodByID(childComplexity, args["foodId"].(string)), true
+
 	case "Query.searchFood":
 		if e.complexity.Query.SearchFood == nil {
 			break
@@ -955,6 +969,17 @@ func (ec *executionContext) field_Query_foodLogs_args(ctx context.Context, rawAr
 		return nil, err
 	}
 	args["date"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getFoodById_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "foodId", ec.unmarshalNID2string)
+	if err != nil {
+		return nil, err
+	}
+	args["foodId"] = arg0
 	return args, nil
 }
 
@@ -3270,6 +3295,96 @@ func (ec *executionContext) fieldContext_Query_searchFood(ctx context.Context, f
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_searchFood_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getFoodById(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getFoodById(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		directive0 := func(rctx context.Context) (any, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().GetFoodByID(rctx, fc.Args["foodId"].(string))
+		}
+
+		directive1 := func(ctx context.Context) (any, error) {
+			if ec.directives.Auth == nil {
+				var zeroVal *Food
+				return zeroVal, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Food); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/HirotakaUchishiba/calomeal_mvp/backend.Food`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*Food)
+	fc.Result = res
+	return ec.marshalOFood2ᚖgithubᚗcomᚋHirotakaUchishibaᚋcalomeal_mvpᚋbackendᚐFood(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getFoodById(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Food_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Food_name(ctx, field)
+			case "brand":
+				return ec.fieldContext_Food_brand(ctx, field)
+			case "calories":
+				return ec.fieldContext_Food_calories(ctx, field)
+			case "protein":
+				return ec.fieldContext_Food_protein(ctx, field)
+			case "carbohydrate":
+				return ec.fieldContext_Food_carbohydrate(ctx, field)
+			case "fat":
+				return ec.fieldContext_Food_fat(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Food", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_getFoodById_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -6775,6 +6890,25 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "getFoodById":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getFoodById(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "dailySummary":
 			field := field
 
@@ -8041,6 +8175,13 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	_ = ctx
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOFood2ᚖgithubᚗcomᚋHirotakaUchishibaᚋcalomeal_mvpᚋbackendᚐFood(ctx context.Context, sel ast.SelectionSet, v *Food) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Food(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v any) (*string, error) {
