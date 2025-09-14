@@ -176,8 +176,16 @@ func (r *mutationResolver) ConfirmResetPassword(ctx context.Context, email strin
 
 // CompleteOnboarding is the resolver for the completeOnboarding field.
 func (r *mutationResolver) CompleteOnboarding(ctx context.Context, profile backend.UserProfileInput, goal backend.UserGoalInput) (*backend.User, error) {
-	// TODO: コンテキストから実際のユーザーIDを取得（認証実装後に修正）
-	userID := "550e8400-e29b-41d4-a716-446655440000" // 有効なUUID形式のダミー値
+	// 認証されたユーザーの情報を取得
+	userID, ok := middleware.GetUserIDFromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("user not authenticated")
+	}
+
+	email, ok := middleware.GetEmailFromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("user email not found")
+	}
 
 	// UserServiceの新しいインターフェースを使用
 	userProfile := user.UserProfileInput{
@@ -198,14 +206,17 @@ func (r *mutationResolver) CompleteOnboarding(ctx context.Context, profile backe
 	// 成功レスポンスを返す
 	return &backend.User{
 		ID:    userID,
-		Email: "user@example.com", // TODO: 実際のユーザー情報を取得
+		Email: email,
 	}, nil
 }
 
 // LogFood is the resolver for the logFood field.
 func (r *mutationResolver) LogFood(ctx context.Context, input backend.LogFoodInput) (*backend.FoodLog, error) {
-	// TODO: コンテキストから実際のユーザーIDを取得
-	userID := "550e8400-e29b-41d4-a716-446655440000" // 有効なUUID形式のダミー値
+	// 認証されたユーザーの情報を取得
+	userID, ok := middleware.GetUserIDFromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("user not authenticated")
+	}
 
 	// foodIdから食品情報を取得（TODO: 実際の食品データベースから取得）
 	// 現時点ではダミーデータを使用
@@ -255,8 +266,11 @@ func (r *mutationResolver) LogFood(ctx context.Context, input backend.LogFoodInp
 
 // LogExercise is the resolver for the logExercise field.
 func (r *mutationResolver) LogExercise(ctx context.Context, input backend.LogExerciseInput) (*backend.ExerciseLog, error) {
-	// TODO: コンテキストから実際のユーザーIDを取得
-	userID := "550e8400-e29b-41d4-a716-446655440000" // 有効なUUID形式のダミー値
+	// 認証されたユーザーの情報を取得
+	userID, ok := middleware.GetUserIDFromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("user not authenticated")
+	}
 
 	// 入力型をサービス層の型に変換
 	serviceInput := log.LogExerciseInput{
@@ -284,8 +298,11 @@ func (r *mutationResolver) LogExercise(ctx context.Context, input backend.LogExe
 
 // LogWeight is the resolver for the logWeight field.
 func (r *mutationResolver) LogWeight(ctx context.Context, weight float64, date string) (*backend.WeightLog, error) {
-	// TODO: コンテキストから実際のユーザーIDを取得
-	userID := "550e8400-e29b-41d4-a716-446655440000"
+	// 認証されたユーザーの情報を取得
+	userID, ok := middleware.GetUserIDFromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("user not authenticated")
+	}
 
 	// 入力型をサービス層の型に変換
 	serviceInput := log.LogWeightInput{
@@ -333,8 +350,11 @@ func (r *queryResolver) SearchFood(ctx context.Context, query string) ([]*backen
 
 // DailySummary is the resolver for the dailySummary field.
 func (r *queryResolver) DailySummary(ctx context.Context, date string) (*backend.DailySummary, error) {
-	// TODO: コンテキストから実際のユーザーIDを取得
-	userID := "550e8400-e29b-41d4-a716-446655440000"
+	// 認証されたユーザーの情報を取得
+	userID, ok := middleware.GetUserIDFromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("user not authenticated")
+	}
 
 	// LogServiceから日次サマリーを取得
 	summary, err := r.Resolver.LogService.GetDailySummary(ctx, userID, date)
@@ -354,8 +374,11 @@ func (r *queryResolver) DailySummary(ctx context.Context, date string) (*backend
 
 // FoodLogs is the resolver for the foodLogs field.
 func (r *queryResolver) FoodLogs(ctx context.Context, date string) ([]*backend.FoodLog, error) {
-	// TODO: コンテキストから実際のユーザーIDを取得
-	userID := "550e8400-e29b-41d4-a716-446655440000"
+	// 認証されたユーザーの情報を取得
+	userID, ok := middleware.GetUserIDFromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("user not authenticated")
+	}
 
 	// LogServiceから食事記録を取得
 	logs, err := r.Resolver.LogService.GetFoodLogs(ctx, userID, date)
@@ -383,8 +406,11 @@ func (r *queryResolver) FoodLogs(ctx context.Context, date string) ([]*backend.F
 
 // ExerciseLogs is the resolver for the exerciseLogs field.
 func (r *queryResolver) ExerciseLogs(ctx context.Context, date string) ([]*backend.ExerciseLog, error) {
-	// TODO: コンテキストから実際のユーザーIDを取得
-	userID := "550e8400-e29b-41d4-a716-446655440000"
+	// 認証されたユーザーの情報を取得
+	userID, ok := middleware.GetUserIDFromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("user not authenticated")
+	}
 
 	// LogServiceから運動記録を取得
 	logs, err := r.Resolver.LogService.GetExerciseLogs(ctx, userID, date)
@@ -408,8 +434,11 @@ func (r *queryResolver) ExerciseLogs(ctx context.Context, date string) ([]*backe
 
 // WeightLogs is the resolver for the weightLogs field.
 func (r *queryResolver) WeightLogs(ctx context.Context, date string) ([]*backend.WeightLog, error) {
-	// TODO: コンテキストから実際のユーザーIDを取得
-	userID := "550e8400-e29b-41d4-a716-446655440000"
+	// 認証されたユーザーの情報を取得
+	userID, ok := middleware.GetUserIDFromContext(ctx)
+	if !ok {
+		return nil, fmt.Errorf("user not authenticated")
+	}
 
 	// LogServiceから体重記録を取得
 	logs, err := r.Resolver.LogService.GetWeightLogs(ctx, userID, date)
