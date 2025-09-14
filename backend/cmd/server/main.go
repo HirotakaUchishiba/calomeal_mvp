@@ -70,11 +70,19 @@ func main() {
 	}
 	defer foodDataClient.Close()
 
+	// logs gRPCクライアントの初期化
+	logsServiceAddr := getenv("LOGS_SERVICE_ADDR", "localhost:50052")
+	logsClient, err := logsvc.NewGRPCClient(logsServiceAddr)
+	if err != nil {
+		log.Fatal("Failed to create logs gRPC client:", err)
+	}
+	defer logsClient.Close()
+
 	// リゾルバのインスタンスを作成し、各サービスを注入（依存性の注入）
 	resolver := &resolvers.Resolver{
 		UserService:     user.NewService(db),
 		FoodDataService: foodDataClient, // gRPCクライアントを使用
-		LogService:      logsvc.NewService(db),
+		LogService:      logsClient,     // gRPCクライアントを使用
 	}
 
 	cfg := backend.Config{
