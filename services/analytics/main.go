@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/HirotakaUchishiba/calomeal_mvp/proto/analytics/v1"
+	analyticspb "github.com/HirotakaUchishiba/calomeal_mvp/services/analytics/internal/proto"
 	"github.com/HirotakaUchishiba/calomeal_mvp/services/analytics/internal/server"
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
