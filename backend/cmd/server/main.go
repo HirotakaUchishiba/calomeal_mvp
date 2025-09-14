@@ -23,6 +23,12 @@ const defaultPort = "8080"
 
 // getDSN returns database connection string from environment variables
 func getDSN() string {
+	// DATABASE_URLが設定されている場合はそれを使用
+	if dbURL := os.Getenv("DATABASE_URL"); dbURL != "" {
+		return dbURL
+	}
+
+	// 個別の環境変数から構築
 	host := getenv("DB_HOST", "db")
 	port := getenv("DB_PORT", "5432")
 	user := getenv("POSTGRES_USER", "postgres")
