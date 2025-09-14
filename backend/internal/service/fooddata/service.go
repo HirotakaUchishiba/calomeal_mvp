@@ -81,7 +81,7 @@ func (s *service) SearchFood(ctx context.Context, query string) ([]Food, error) 
 // GetFoodByIDはIDで食品を取得します
 func (s *service) GetFoodByID(ctx context.Context, foodID string) (*Food, error) {
 	fmt.Printf("GetFoodByID called with foodID: %s\n", foodID)
-	
+
 	const query = `
 		SELECT id, name, brand, calories, protein, carbohydrate, fat
 		FROM foods 
