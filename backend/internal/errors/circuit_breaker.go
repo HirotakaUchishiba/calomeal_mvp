@@ -31,12 +31,12 @@ func (s CircuitState) String() string {
 
 // CircuitBreakerConfig represents the configuration for a circuit breaker
 type CircuitBreakerConfig struct {
-	FailureThreshold    int           `json:"failure_threshold"`    // Number of failures to open circuit
-	SuccessThreshold    int           `json:"success_threshold"`    // Number of successes to close circuit (half-open state)
-	Timeout             time.Duration `json:"timeout"`              // Time to wait before trying half-open
-	MaxRequests         int           `json:"max_requests"`         // Max requests in half-open state
-	FailureRate         float64       `json:"failure_rate"`         // Failure rate threshold (0.0-1.0)
-	WindowSize          time.Duration `json:"window_size"`          // Time window for failure rate calculation
+	FailureThreshold    int           `json:"failure_threshold"`     // Number of failures to open circuit
+	SuccessThreshold    int           `json:"success_threshold"`     // Number of successes to close circuit (half-open state)
+	Timeout             time.Duration `json:"timeout"`               // Time to wait before trying half-open
+	MaxRequests         int           `json:"max_requests"`          // Max requests in half-open state
+	FailureRate         float64       `json:"failure_rate"`          // Failure rate threshold (0.0-1.0)
+	WindowSize          time.Duration `json:"window_size"`           // Time window for failure rate calculation
 	MinRequestThreshold int           `json:"min_request_threshold"` // Minimum requests before calculating failure rate
 }
 
@@ -55,15 +55,15 @@ func DefaultCircuitBreakerConfig() *CircuitBreakerConfig {
 
 // CircuitBreaker implements the circuit breaker pattern
 type CircuitBreaker struct {
-	config     *CircuitBreakerConfig
-	state      CircuitState
-	failures   int
-	successes  int
-	requests   int
+	config      *CircuitBreakerConfig
+	state       CircuitState
+	failures    int
+	successes   int
+	requests    int
 	lastFailure time.Time
 	nextAttempt time.Time
-	mutex      sync.RWMutex
-	metrics    *CircuitBreakerMetrics
+	mutex       sync.RWMutex
+	metrics     *CircuitBreakerMetrics
 }
 
 // CircuitBreakerMetrics tracks circuit breaker metrics
@@ -101,10 +101,10 @@ func (cb *CircuitBreaker) Execute(ctx context.Context, fn func() error) error {
 
 	// Execute the function
 	err := fn()
-	
+
 	// Record the result
 	cb.recordResult(err)
-	
+
 	return err
 }
 
@@ -118,10 +118,10 @@ func (cb *CircuitBreaker) ExecuteWithResult(ctx context.Context, fn func() (inte
 
 	// Execute the function
 	result, err := fn()
-	
+
 	// Record the result
 	cb.recordResult(err)
-	
+
 	return result, err
 }
 
@@ -241,7 +241,7 @@ func (cb *CircuitBreaker) getNextAttempt() time.Time {
 func (cb *CircuitBreaker) GetMetrics() *CircuitBreakerMetrics {
 	cb.mutex.RLock()
 	defer cb.mutex.RUnlock()
-	
+
 	// Return a copy to avoid race conditions
 	return &CircuitBreakerMetrics{
 		TotalRequests:   cb.metrics.TotalRequests,
@@ -259,7 +259,7 @@ func (cb *CircuitBreaker) GetMetrics() *CircuitBreakerMetrics {
 func (cb *CircuitBreaker) Reset() {
 	cb.mutex.Lock()
 	defer cb.mutex.Unlock()
-	
+
 	cb.state = StateClosed
 	cb.failures = 0
 	cb.successes = 0

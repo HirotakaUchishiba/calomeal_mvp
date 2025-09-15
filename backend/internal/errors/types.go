@@ -14,37 +14,37 @@ type ErrorCode string
 
 const (
 	// Authentication & Authorization
-	ErrCodeUnauthorized     ErrorCode = "UNAUTHORIZED"
-	ErrCodeForbidden        ErrorCode = "FORBIDDEN"
-	ErrCodeTokenExpired     ErrorCode = "TOKEN_EXPIRED"
-	ErrCodeInvalidToken     ErrorCode = "INVALID_TOKEN"
-	
+	ErrCodeUnauthorized ErrorCode = "UNAUTHORIZED"
+	ErrCodeForbidden    ErrorCode = "FORBIDDEN"
+	ErrCodeTokenExpired ErrorCode = "TOKEN_EXPIRED"
+	ErrCodeInvalidToken ErrorCode = "INVALID_TOKEN"
+
 	// Validation
-	ErrCodeValidation       ErrorCode = "VALIDATION_ERROR"
-	ErrCodeInvalidInput     ErrorCode = "INVALID_INPUT"
-	ErrCodeMissingField     ErrorCode = "MISSING_FIELD"
-	
+	ErrCodeValidation   ErrorCode = "VALIDATION_ERROR"
+	ErrCodeInvalidInput ErrorCode = "INVALID_INPUT"
+	ErrCodeMissingField ErrorCode = "MISSING_FIELD"
+
 	// Database
-	ErrCodeDatabase         ErrorCode = "DATABASE_ERROR"
-	ErrCodeRecordNotFound   ErrorCode = "RECORD_NOT_FOUND"
-	ErrCodeDuplicateRecord  ErrorCode = "DUPLICATE_RECORD"
+	ErrCodeDatabase            ErrorCode = "DATABASE_ERROR"
+	ErrCodeRecordNotFound      ErrorCode = "RECORD_NOT_FOUND"
+	ErrCodeDuplicateRecord     ErrorCode = "DUPLICATE_RECORD"
 	ErrCodeConstraintViolation ErrorCode = "CONSTRAINT_VIOLATION"
-	
+
 	// External Services
 	ErrCodeServiceUnavailable ErrorCode = "SERVICE_UNAVAILABLE"
 	ErrCodeServiceTimeout     ErrorCode = "SERVICE_TIMEOUT"
 	ErrCodeServiceError       ErrorCode = "SERVICE_ERROR"
 	ErrCodeNetworkError       ErrorCode = "NETWORK_ERROR"
-	
+
 	// Business Logic
 	ErrCodeBusinessRule     ErrorCode = "BUSINESS_RULE_VIOLATION"
 	ErrCodeInsufficientData ErrorCode = "INSUFFICIENT_DATA"
 	ErrCodeRateLimit        ErrorCode = "RATE_LIMIT_EXCEEDED"
-	
+
 	// System
-	ErrCodeInternal         ErrorCode = "INTERNAL_ERROR"
-	ErrCodeNotImplemented   ErrorCode = "NOT_IMPLEMENTED"
-	ErrCodeConfiguration    ErrorCode = "CONFIGURATION_ERROR"
+	ErrCodeInternal       ErrorCode = "INTERNAL_ERROR"
+	ErrCodeNotImplemented ErrorCode = "NOT_IMPLEMENTED"
+	ErrCodeConfiguration  ErrorCode = "CONFIGURATION_ERROR"
 )
 
 // ErrorSeverity represents the severity level of an error
@@ -104,10 +104,10 @@ func Wrap(err error, code ErrorCode, message string) *CaloMealError {
 	if err == nil {
 		return nil
 	}
-	
+
 	caloMealErr := New(code, message)
 	caloMealErr.Cause = err
-	
+
 	// If the wrapped error is already a CaloMealError, preserve some fields
 	if existingErr, ok := err.(*CaloMealError); ok {
 		caloMealErr.RequestID = existingErr.RequestID
@@ -116,7 +116,7 @@ func Wrap(err error, code ErrorCode, message string) *CaloMealError {
 		caloMealErr.Service = existingErr.Service
 		caloMealErr.Operation = existingErr.Operation
 	}
-	
+
 	return caloMealErr
 }
 
@@ -166,11 +166,11 @@ func (e *CaloMealError) WithSeverity(severity ErrorSeverity) *CaloMealError {
 func (e *CaloMealError) ToGRPCStatus() *status.Status {
 	grpcCode := getGRPCCode(e.Code)
 	st := status.New(grpcCode, e.Message)
-	
+
 	// Add error details as metadata (simplified version without protobuf)
 	// Note: In a real implementation, you would define proper protobuf messages
 	// for error details and use st.WithDetails() with those messages
-	
+
 	return st
 }
 
