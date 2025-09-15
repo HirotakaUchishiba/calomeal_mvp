@@ -48,6 +48,9 @@ test.describe('E2E-HP-001: ハッピーパス', () => {
     // ダッシュボードが表示されることを確認
     await expect(page.locator('h1')).toContainText('ダッシュボード');
     
+    // アナリティクスボタンが表示されることを確認
+    await expect(page.locator('text=📊 アナリティクス')).toBeVisible();
+    
     // フローティングアクションボタンをクリック
     await page.click('button:has-text("+")');
     
