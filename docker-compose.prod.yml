@@ -27,8 +27,8 @@ services:
   # Foods gRPC Service
   foods:
     build:
-      context: ./services/foods
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/foods/Dockerfile
     container_name: calomeal-foods-prod
     environment:
       - DATABASE_URL=postgres://postgres:${DB_PASSWORD}@db:5432/calomeal?sslmode=disable
@@ -41,19 +41,19 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "grpc_health_probe", "-addr=:50051"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      test: ["CMD-SHELL", "ps | grep -q '[m]ain'"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     networks:
       - calomeal-network
 
   # Logs gRPC Service
   logs:
     build:
-      context: ./services/logs
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/logs/Dockerfile
     container_name: calomeal-logs-prod
     environment:
       - DATABASE_URL=postgres://postgres:${DB_PASSWORD}@db:5432/calomeal?sslmode=disable
@@ -66,19 +66,19 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "grpc_health_probe", "-addr=:50052"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      test: ["CMD-SHELL", "ps | grep -q '[m]ain'"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     networks:
       - calomeal-network
 
   # Analytics gRPC Service
   analytics:
     build:
-      context: ./services/analytics
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/analytics/Dockerfile
     container_name: calomeal-analytics-prod
     environment:
       - DATABASE_URL=postgres://postgres:${DB_PASSWORD}@db:5432/calomeal?sslmode=disable
@@ -91,19 +91,19 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "grpc_health_probe", "-addr=:50053"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      test: ["CMD-SHELL", "ps | grep -q '[a]nalytics-service'"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     networks:
       - calomeal-network
 
   # BFF GraphQL Service
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./backend/Dockerfile
     container_name: calomeal-backend-prod
     environment:
       - DATABASE_URL=postgres://postgres:${DB_PASSWORD}@db:5432/calomeal?sslmode=disable
@@ -116,8 +116,7 @@ services:
       - LOG_FORMAT=json
       - JWT_SECRET=${JWT_SECRET}
       - CORS_ORIGINS=${CORS_ORIGINS}
-    ports:
-      - "8080:8080"
+    # Expose only inside docker network; Nginx will proxy
     depends_on:
       db:
         condition: service_healthy
@@ -129,25 +128,24 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      test: ["CMD-SHELL", "ps | grep -q '[s]erver'"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     networks:
       - calomeal-network
 
   # Frontend React Application
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./frontend/Dockerfile
     container_name: calomeal-frontend-prod
     environment:
       - VITE_API_URL=http://localhost:8080
       - VITE_APP_ENV=production
-    ports:
-      - "80:80"
+    # No host port mapping; served via Nginx
     depends_on:
       backend:
         condition: service_healthy

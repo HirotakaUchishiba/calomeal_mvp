@@ -5,7 +5,6 @@ import (
 	"io"
 	"log/slog"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -133,22 +132,28 @@ func (l *Logger) WithContext(ctx context.Context) *Logger {
 	attrs := []slog.Attr{}
 
 	// Extract common context values
-	if userID, ok := ctx.Value("user_id").(string); ok && userID != "" {
+	if userID, ok := ctx.Value(UserIDKey).(string); ok && userID != "" {
 		attrs = append(attrs, slog.String("user_id", userID))
 	}
-	if traceID, ok := ctx.Value("trace_id").(string); ok && traceID != "" {
+	if traceID, ok := ctx.Value(TraceIDKey).(string); ok && traceID != "" {
 		attrs = append(attrs, slog.String("trace_id", traceID))
 	}
-	if requestID, ok := ctx.Value("request_id").(string); ok && requestID != "" {
+	if requestID, ok := ctx.Value(RequestIDKey).(string); ok && requestID != "" {
 		attrs = append(attrs, slog.String("request_id", requestID))
 	}
-	if email, ok := ctx.Value("email").(string); ok && email != "" {
+	if email, ok := ctx.Value(EmailKey).(string); ok && email != "" {
 		attrs = append(attrs, slog.String("email", email))
 	}
 
 	if len(attrs) > 0 {
+		// Convert slog.Attr to []any
+		args := make([]any, len(attrs)*2)
+		for i, attr := range attrs {
+			args[i*2] = attr.Key
+			args[i*2+1] = attr.Value.Any()
+		}
 		return &Logger{
-			Logger: l.Logger.With(attrs),
+			Logger: l.Logger.With(args...),
 			config: l.config,
 		}
 	}
@@ -163,8 +168,14 @@ func (l *Logger) WithFields(fields map[string]interface{}) *Logger {
 		attrs = append(attrs, slog.Any(k, v))
 	}
 
+	// Convert slog.Attr to []any
+	args := make([]any, len(attrs)*2)
+	for i, attr := range attrs {
+		args[i*2] = attr.Key
+		args[i*2+1] = attr.Value.Any()
+	}
 	return &Logger{
-		Logger: l.Logger.With(attrs),
+		Logger: l.Logger.With(args...),
 		config: l.config,
 	}
 }
@@ -204,7 +215,7 @@ func (l *Logger) LogError(ctx context.Context, err error, message string, fields
 	attrs := []slog.Attr{
 		slog.String("error", err.Error()),
 	}
-	
+
 	// Add additional fields
 	for i := 0; i < len(fields); i += 2 {
 		if i+1 < len(fields) {
@@ -212,7 +223,13 @@ func (l *Logger) LogError(ctx context.Context, err error, message string, fields
 		}
 	}
 
-	l.WithContext(ctx).Error(message, attrs...)
+	// Convert slog.Attr to []any
+	args := make([]any, len(attrs)*2)
+	for i, attr := range attrs {
+		args[i*2] = attr.Key
+		args[i*2+1] = attr.Value.Any()
+	}
+	l.WithContext(ctx).Error(message, args...)
 }
 
 // LogSecurityEvent logs a security-related event
@@ -221,12 +238,18 @@ func (l *Logger) LogSecurityEvent(ctx context.Context, event string, severity st
 		slog.String("event", event),
 		slog.String("severity", severity),
 	}
-	
+
 	for k, v := range details {
 		attrs = append(attrs, slog.Any(k, v))
 	}
 
-	l.WithContext(ctx).Warn("Security event", attrs...)
+	// Convert slog.Attr to []any
+	args := make([]any, len(attrs)*2)
+	for i, attr := range attrs {
+		args[i*2] = attr.Key
+		args[i*2+1] = attr.Value.Any()
+	}
+	l.WithContext(ctx).Warn("Security event", args...)
 }
 
 // LogPerformance logs a performance metric
@@ -235,12 +258,18 @@ func (l *Logger) LogPerformance(ctx context.Context, operation string, duration 
 		slog.String("operation", operation),
 		slog.Duration("duration", duration),
 	}
-	
+
 	for k, v := range metrics {
 		attrs = append(attrs, slog.Any(k, v))
 	}
 
-	l.WithContext(ctx).Info("Performance metric", attrs...)
+	// Convert slog.Attr to []any
+	args := make([]any, len(attrs)*2)
+	for i, attr := range attrs {
+		args[i*2] = attr.Key
+		args[i*2+1] = attr.Value.Any()
+	}
+	l.WithContext(ctx).Info("Performance metric", args...)
 }
 
 // LogBusinessEvent logs a business-related event
@@ -248,12 +277,18 @@ func (l *Logger) LogBusinessEvent(ctx context.Context, event string, details map
 	attrs := []slog.Attr{
 		slog.String("event", event),
 	}
-	
+
 	for k, v := range details {
 		attrs = append(attrs, slog.Any(k, v))
 	}
 
-	l.WithContext(ctx).Info("Business event", attrs...)
+	// Convert slog.Attr to []any
+	args := make([]any, len(attrs)*2)
+	for i, attr := range attrs {
+		args[i*2] = attr.Key
+		args[i*2+1] = attr.Value.Any()
+	}
+	l.WithContext(ctx).Info("Business event", args...)
 }
 
 // LogStartup logs application startup information
@@ -263,12 +298,18 @@ func (l *Logger) LogStartup(version, buildTime, gitCommit string, config map[str
 		slog.String("build_time", buildTime),
 		slog.String("git_commit", gitCommit),
 	}
-	
+
 	for k, v := range config {
 		attrs = append(attrs, slog.Any(k, v))
 	}
 
-	l.Info("Application started", attrs...)
+	// Convert slog.Attr to []any
+	args := make([]any, len(attrs)*2)
+	for i, attr := range attrs {
+		args[i*2] = attr.Key
+		args[i*2+1] = attr.Value.Any()
+	}
+	l.Info("Application started", args...)
 }
 
 // LogShutdown logs application shutdown information
@@ -286,12 +327,18 @@ func (l *Logger) LogHealthCheck(ctx context.Context, service string, status stri
 		slog.String("status", status),
 		slog.Duration("duration", duration),
 	}
-	
+
 	for k, v := range details {
 		attrs = append(attrs, slog.Any(k, v))
 	}
 
-	l.WithContext(ctx).Info("Health check", attrs...)
+	// Convert slog.Attr to []any
+	args := make([]any, len(attrs)*2)
+	for i, attr := range attrs {
+		args[i*2] = attr.Key
+		args[i*2+1] = attr.Value.Any()
+	}
+	l.WithContext(ctx).Info("Health check", args...)
 }
 
 // LogAudit logs an audit event
@@ -301,12 +348,18 @@ func (l *Logger) LogAudit(ctx context.Context, action string, resource string, r
 		slog.String("resource", resource),
 		slog.String("result", result),
 	}
-	
+
 	for k, v := range details {
 		attrs = append(attrs, slog.Any(k, v))
 	}
 
-	l.WithContext(ctx).Info("Audit event", attrs...)
+	// Convert slog.Attr to []any
+	args := make([]any, len(attrs)*2)
+	for i, attr := range attrs {
+		args[i*2] = attr.Key
+		args[i*2+1] = attr.Value.Any()
+	}
+	l.WithContext(ctx).Info("Audit event", args...)
 }
 
 // SetLevel dynamically changes the log level

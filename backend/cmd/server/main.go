@@ -125,6 +125,13 @@ func main() {
 	// 実際のAPIエンドポイントである /query を、CORSミドルウェアを通して設定
 	http.Handle("/query", c.Handler(srv))
 
+	// ヘルスチェックエンドポイント
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"status":"ok"}`))
+	})
+
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	// サーバーを起動
 	log.Fatal(http.ListenAndServe(":"+port, nil))
