@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	analyticspb "github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/analytics/proto"
 	"github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/errors"
+	analyticspb "github.com/HirotakaUchishiba/calomeal_mvp/backend/internal/service/analytics/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
@@ -109,22 +109,20 @@ func (c *AnalyticsClient) GetDailyNutritionSummary(ctx context.Context, userID, 
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	// Execute with circuit breaker and retry logic
-	result, err := c.circuitBreaker.ExecuteWithResult(ctx, func() (*analyticspb.DailyNutritionSummary, error) {
-		return errors.RetryWithResult(ctx, c.retryConfig, func() (*analyticspb.DailyNutritionSummary, error) {
-			req := &analyticspb.GetDailyNutritionSummaryRequest{
-				UserId: userID,
-				Date:   date,
-			}
+	// Execute with retry logic
+	result, err := errors.RetryWithResult(ctx, c.retryConfig, func() (*analyticspb.DailyNutritionSummary, error) {
+		req := &analyticspb.GetDailyNutritionSummaryRequest{
+			UserId: userID,
+			Date:   date,
+		}
 
-			resp, err := c.client.GetDailyNutritionSummary(ctx, req)
-			if err != nil {
-				// Convert gRPC error to CaloMealError
-				return nil, c.convertGRPCError(err, "GetDailyNutritionSummary")
-			}
+		resp, err := c.client.GetDailyNutritionSummary(ctx, req)
+		if err != nil {
+			// Convert gRPC error to CaloMealError
+			return nil, c.convertGRPCError(err, "GetDailyNutritionSummary")
+		}
 
-			return resp.Summary, nil
-		})
+		return resp.Summary, nil
 	})
 
 	if err != nil {
@@ -133,9 +131,10 @@ func (c *AnalyticsClient) GetDailyNutritionSummary(ctx context.Context, userID, 
 			"user_id": userID,
 			"date":    date,
 		})
+		return nil, err
 	}
 
-	return result, err
+	return result, nil
 }
 
 // GetWeeklyNutritionTrends retrieves weekly nutrition trends
@@ -144,34 +143,34 @@ func (c *AnalyticsClient) GetWeeklyNutritionTrends(ctx context.Context, userID, 
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
-	req := &analyticspb.GetWeeklyNutritionTrendsRequest{
-		UserId:    userID,
-		StartDate: startDate,
-		EndDate:   endDate,
-	}
-
-	resp, err := c.client.GetWeeklyNutritionTrends(ctx, req)
-	if err != nil {
-		// Handle specific gRPC errors
-		if st, ok := status.FromError(err); ok {
-			switch st.Code() {
-			case codes.DeadlineExceeded:
-				return nil, fmt.Errorf("request timeout: %w", err)
-			case codes.Unavailable:
-				return nil, fmt.Errorf("analytics service unavailable: %w", err)
-			case codes.Unauthenticated:
-				return nil, fmt.Errorf("authentication failed: %w", err)
-			case codes.PermissionDenied:
-				return nil, fmt.Errorf("permission denied: %w", err)
-			default:
-				return nil, fmt.Errorf("gRPC error [%s]: %w", st.Code(), err)
-			}
+	// Execute with retry logic
+	result, err := errors.RetryWithResult(ctx, c.retryConfig, func() (*analyticspb.GetWeeklyNutritionTrendsResponse, error) {
+		req := &analyticspb.GetWeeklyNutritionTrendsRequest{
+			UserId:    userID,
+			StartDate: startDate,
+			EndDate:   endDate,
 		}
-		log.Printf("Failed to get weekly nutrition trends: %v", err)
+
+		resp, err := c.client.GetWeeklyNutritionTrends(ctx, req)
+		if err != nil {
+			// Convert gRPC error to CaloMealError
+			return nil, c.convertGRPCError(err, "GetWeeklyNutritionTrends")
+		}
+
+		return resp, nil
+	})
+
+	if err != nil {
+		// Log error with context
+		errors.LogError(ctx, err, "GetWeeklyNutritionTrends", map[string]interface{}{
+			"user_id":    userID,
+			"start_date": startDate,
+			"end_date":   endDate,
+		})
 		return nil, err
 	}
 
-	return resp, nil
+	return result, nil
 }
 
 // GetMonthlyNutritionInsights retrieves monthly nutrition insights
@@ -197,34 +196,34 @@ func (c *AnalyticsClient) GetWeightProgressAnalysis(ctx context.Context, userID,
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
-	req := &analyticspb.GetWeightProgressAnalysisRequest{
-		UserId:    userID,
-		StartDate: startDate,
-		EndDate:   endDate,
-	}
-
-	resp, err := c.client.GetWeightProgressAnalysis(ctx, req)
-	if err != nil {
-		// Handle specific gRPC errors
-		if st, ok := status.FromError(err); ok {
-			switch st.Code() {
-			case codes.DeadlineExceeded:
-				return nil, fmt.Errorf("request timeout: %w", err)
-			case codes.Unavailable:
-				return nil, fmt.Errorf("analytics service unavailable: %w", err)
-			case codes.Unauthenticated:
-				return nil, fmt.Errorf("authentication failed: %w", err)
-			case codes.PermissionDenied:
-				return nil, fmt.Errorf("permission denied: %w", err)
-			default:
-				return nil, fmt.Errorf("gRPC error [%s]: %w", st.Code(), err)
-			}
+	// Execute with retry logic
+	result, err := errors.RetryWithResult(ctx, c.retryConfig, func() (*analyticspb.WeightProgressAnalysis, error) {
+		req := &analyticspb.GetWeightProgressAnalysisRequest{
+			UserId:    userID,
+			StartDate: startDate,
+			EndDate:   endDate,
 		}
-		log.Printf("Failed to get weight progress analysis: %v", err)
+
+		resp, err := c.client.GetWeightProgressAnalysis(ctx, req)
+		if err != nil {
+			// Convert gRPC error to CaloMealError
+			return nil, c.convertGRPCError(err, "GetWeightProgressAnalysis")
+		}
+
+		return resp.Analysis, nil
+	})
+
+	if err != nil {
+		// Log error with context
+		errors.LogError(ctx, err, "GetWeightProgressAnalysis", map[string]interface{}{
+			"user_id":    userID,
+			"start_date": startDate,
+			"end_date":   endDate,
+		})
 		return nil, err
 	}
 
-	return resp.Analysis, nil
+	return result, nil
 }
 
 // GetCalorieBalanceAnalysis retrieves calorie balance analysis
@@ -233,34 +232,34 @@ func (c *AnalyticsClient) GetCalorieBalanceAnalysis(ctx context.Context, userID,
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
-	req := &analyticspb.GetCalorieBalanceAnalysisRequest{
-		UserId:    userID,
-		StartDate: startDate,
-		EndDate:   endDate,
-	}
-
-	resp, err := c.client.GetCalorieBalanceAnalysis(ctx, req)
-	if err != nil {
-		// Handle specific gRPC errors
-		if st, ok := status.FromError(err); ok {
-			switch st.Code() {
-			case codes.DeadlineExceeded:
-				return nil, fmt.Errorf("request timeout: %w", err)
-			case codes.Unavailable:
-				return nil, fmt.Errorf("analytics service unavailable: %w", err)
-			case codes.Unauthenticated:
-				return nil, fmt.Errorf("authentication failed: %w", err)
-			case codes.PermissionDenied:
-				return nil, fmt.Errorf("permission denied: %w", err)
-			default:
-				return nil, fmt.Errorf("gRPC error [%s]: %w", st.Code(), err)
-			}
+	// Execute with retry logic
+	result, err := errors.RetryWithResult(ctx, c.retryConfig, func() (*analyticspb.CalorieBalanceAnalysis, error) {
+		req := &analyticspb.GetCalorieBalanceAnalysisRequest{
+			UserId:    userID,
+			StartDate: startDate,
+			EndDate:   endDate,
 		}
-		log.Printf("Failed to get calorie balance analysis: %v", err)
+
+		resp, err := c.client.GetCalorieBalanceAnalysis(ctx, req)
+		if err != nil {
+			// Convert gRPC error to CaloMealError
+			return nil, c.convertGRPCError(err, "GetCalorieBalanceAnalysis")
+		}
+
+		return resp.Analysis, nil
+	})
+
+	if err != nil {
+		// Log error with context
+		errors.LogError(ctx, err, "GetCalorieBalanceAnalysis", map[string]interface{}{
+			"user_id":    userID,
+			"start_date": startDate,
+			"end_date":   endDate,
+		})
 		return nil, err
 	}
 
-	return resp.Analysis, nil
+	return result, nil
 }
 
 // HealthCheck checks if the analytics service is healthy
