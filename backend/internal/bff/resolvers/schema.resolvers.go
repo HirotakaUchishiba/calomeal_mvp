@@ -104,6 +104,12 @@ func (r *queryResolver) NutritionSummary(ctx context.Context, date string) (*bac
 		return nil, fmt.Errorf("user not authenticated")
 	}
 
+	// Get user email for metadata (optional, can be empty for now)
+	email := "" // TODO: Extract from JWT token if needed
+
+	// Add metadata to context for gRPC calls
+	ctx = middleware.AddMetadataToContext(ctx, userID, email)
+
 	summary, err := r.AnalyticsService.GetDailyNutritionSummary(ctx, userID, date)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get nutrition summary: %w", err)
@@ -143,6 +149,12 @@ func (r *queryResolver) NutritionTrends(ctx context.Context, startDate string, e
 	if !ok {
 		return nil, fmt.Errorf("user not authenticated")
 	}
+
+	// Get user email for metadata (optional, can be empty for now)
+	email := "" // TODO: Extract from JWT token if needed
+
+	// Add metadata to context for gRPC calls
+	ctx = middleware.AddMetadataToContext(ctx, userID, email)
 
 	trends, err := r.AnalyticsService.GetWeeklyNutritionTrends(ctx, userID, startDate, endDate)
 	if err != nil {
@@ -227,6 +239,12 @@ func (r *queryResolver) WeightProgress(ctx context.Context, startDate string, en
 		return nil, fmt.Errorf("user not authenticated")
 	}
 
+	// Get user email for metadata (optional, can be empty for now)
+	email := "" // TODO: Extract from JWT token if needed
+
+	// Add metadata to context for gRPC calls
+	ctx = middleware.AddMetadataToContext(ctx, userID, email)
+
 	progress, err := r.AnalyticsService.GetWeightProgressAnalysis(ctx, userID, startDate, endDate)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get weight progress: %w", err)
@@ -260,6 +278,12 @@ func (r *queryResolver) CalorieBalance(ctx context.Context, startDate string, en
 	if !ok {
 		return nil, fmt.Errorf("user not authenticated")
 	}
+
+	// Get user email for metadata (optional, can be empty for now)
+	email := "" // TODO: Extract from JWT token if needed
+
+	// Add metadata to context for gRPC calls
+	ctx = middleware.AddMetadataToContext(ctx, userID, email)
 
 	balance, err := r.AnalyticsService.GetCalorieBalanceAnalysis(ctx, userID, startDate, endDate)
 	if err != nil {
