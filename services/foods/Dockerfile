@@ -8,10 +8,13 @@ WORKDIR /app
 RUN apk add --no-cache git
 
 # go.modとgo.sumをコピー
-COPY go.mod go.sum ./
+COPY services/foods/go.mod services/foods/go.sum ./
+
+# protoディレクトリをコピー
+COPY proto/ ./proto/
 
 # ソースコードをコピー
-COPY . .
+COPY services/foods/ .
 
 # 依存関係をダウンロード（protoはボリュームマウントで提供）
 RUN go mod download

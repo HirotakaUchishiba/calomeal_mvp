@@ -5,13 +5,16 @@ FROM golang:1.25-alpine
 WORKDIR /app
 
 # 3. Goモジュールの依存関係を先にコピーしてキャッシュする
-COPY go.mod go.sum ./
+COPY backend/go.mod backend/go.sum ./
 
-# 4. 依存関係を解決（protoはボリュームマウントで提供）
+# 4. protoディレクトリをコピー
+COPY proto/ ./proto/
+
+# 5. 依存関係を解決
 RUN go mod tidy
 
 # 6. アプリケーションのソースコードをコピーする
-COPY . .
+COPY backend/ .
 
 # 7. アプリケーションをビルドする
 # CGO_ENABLED=0 は、静的リンクバイナリを生成するためのおまじない

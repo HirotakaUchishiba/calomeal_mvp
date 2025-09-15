@@ -51,3 +51,13 @@ coverage/
 # Playwright test results
 test-results/
 playwright-report/
+
+# SSL certificates and keys
+nginx/ssl/
+*.pem
+*.key
+*.crt
+
+# Backup files
+backups/backup_*/
+config/*.backup.*

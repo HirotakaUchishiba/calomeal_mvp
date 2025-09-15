@@ -7,13 +7,16 @@ RUN apk add --no-cache git
 WORKDIR /app
 
 # Copy go mod files
-COPY go.mod go.sum ./
+COPY services/analytics/go.mod services/analytics/go.sum ./
+
+# Copy proto directory
+COPY proto/ ./proto/
 
 # Download dependencies
 RUN go mod download
 
 # Copy source code
-COPY . .
+COPY services/analytics/ .
 
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux go build -o /analytics-service ./main.go

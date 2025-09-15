@@ -14,23 +14,23 @@ func LoggingMiddleware(logger *Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
-			
+
 			// Generate request ID
 			requestID := uuid.New().String()
-			
+
 			// Add request ID to context
-			ctx := context.WithValue(r.Context(), "request_id", requestID)
-			ctx = context.WithValue(ctx, "trace_id", requestID) // Use same ID for trace
-			
+			ctx := context.WithValue(r.Context(), RequestIDKey, requestID)
+			ctx = context.WithValue(ctx, TraceIDKey, requestID) // Use same ID for trace
+
 			// Add request ID to response headers
 			w.Header().Set("X-Request-ID", requestID)
-			
+
 			// Create response writer wrapper to capture status code
 			wrapped := &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
-			
+
 			// Process request
 			next.ServeHTTP(wrapped, r.WithContext(ctx))
-			
+
 			// Log request
 			duration := time.Since(start)
 			logger.LogRequest(ctx, r.Method, r.URL.Path, wrapped.statusCode, duration, r.UserAgent())
@@ -53,33 +53,35 @@ func (rw *responseWriter) WriteHeader(code int) {
 func GRPCLoggingInterceptor(logger *Logger) func(context.Context, interface{}, *grpc.UnaryServerInfo, grpc.UnaryHandler) (interface{}, error) {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		start := time.Now()
-		
+
 		// Generate request ID if not present
-		if _, ok := ctx.Value("request_id").(string); !ok {
+		if _, ok := ctx.Value(RequestIDKey).(string); !ok {
 			requestID := uuid.New().String()
-			ctx = context.WithValue(ctx, "request_id", requestID)
-			ctx = context.WithValue(ctx, "trace_id", requestID)
+			ctx = context.WithValue(ctx, RequestIDKey, requestID)
+			ctx = context.WithValue(ctx, TraceIDKey, requestID)
 		}
-		
+
 		// Process request
 		resp, err := handler(ctx, req)
-		
+
 		// Log request
 		duration := time.Since(start)
 		statusCode := "OK"
 		if err != nil {
 			statusCode = "ERROR"
 		}
-		
+
 		service := "unknown"
 		method := "unknown"
 		if info != nil {
-			service = info.Server
+			if serverName, ok := info.Server.(string); ok {
+				service = serverName
+			}
 			method = info.FullMethod
 		}
-		
+
 		logger.LogGRPCRequest(ctx, service, method, duration, statusCode)
-		
+
 		return resp, err
 	}
 }
