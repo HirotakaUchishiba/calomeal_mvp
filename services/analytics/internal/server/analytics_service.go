@@ -8,6 +8,7 @@ import (
 	"time"
 
 	analyticspb "github.com/HirotakaUchishiba/calomeal_mvp/services/analytics/internal/proto"
+	"github.com/HirotakaUchishiba/calomeal_mvp/services/analytics/internal/middleware"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -27,9 +28,18 @@ func NewAnalyticsService(db *sql.DB) *AnalyticsService {
 
 // GetDailyNutritionSummary returns daily nutrition summary
 func (s *AnalyticsService) GetDailyNutritionSummary(ctx context.Context, req *analyticspb.GetDailyNutritionSummaryRequest) (*analyticspb.GetDailyNutritionSummaryResponse, error) {
+	// Validate metadata and user ID
+	if err := middleware.ValidateUserID(ctx, req.UserId); err != nil {
+		return nil, err
+	}
+
+	// Log request with metadata
+	middleware.LogWithMetadata(ctx, "INFO", "GetDailyNutritionSummary request", "date", req.Date)
+
 	// Parse date
 	date, err := time.Parse("2006-01-02", req.Date)
 	if err != nil {
+		middleware.LogWithMetadata(ctx, "ERROR", "Invalid date format", "date", req.Date, "error", err)
 		return nil, status.Errorf(codes.InvalidArgument, "invalid date format: %v", err)
 	}
 
@@ -55,9 +65,18 @@ func (s *AnalyticsService) GetDailyNutritionSummary(ctx context.Context, req *an
 
 // GetWeeklyNutritionTrends returns weekly nutrition trends
 func (s *AnalyticsService) GetWeeklyNutritionTrends(ctx context.Context, req *analyticspb.GetWeeklyNutritionTrendsRequest) (*analyticspb.GetWeeklyNutritionTrendsResponse, error) {
+	// Validate metadata and user ID
+	if err := middleware.ValidateUserID(ctx, req.UserId); err != nil {
+		return nil, err
+	}
+
+	// Log request with metadata
+	middleware.LogWithMetadata(ctx, "INFO", "GetWeeklyNutritionTrends request", "startDate", req.StartDate, "endDate", req.EndDate)
+
 	// Parse dates
 	startDate, err := time.Parse("2006-01-02", req.StartDate)
 	if err != nil {
+		middleware.LogWithMetadata(ctx, "ERROR", "Invalid start date format", "startDate", req.StartDate, "error", err)
 		return nil, status.Errorf(codes.InvalidArgument, "invalid start date format: %v", err)
 	}
 
@@ -121,9 +140,18 @@ func (s *AnalyticsService) GetMonthlyNutritionInsights(ctx context.Context, req 
 
 // GetWeightProgressAnalysis returns weight progress analysis
 func (s *AnalyticsService) GetWeightProgressAnalysis(ctx context.Context, req *analyticspb.GetWeightProgressAnalysisRequest) (*analyticspb.GetWeightProgressAnalysisResponse, error) {
+	// Validate metadata and user ID
+	if err := middleware.ValidateUserID(ctx, req.UserId); err != nil {
+		return nil, err
+	}
+
+	// Log request with metadata
+	middleware.LogWithMetadata(ctx, "INFO", "GetWeightProgressAnalysis request", "startDate", req.StartDate, "endDate", req.EndDate)
+
 	// Parse dates
 	startDate, err := time.Parse("2006-01-02", req.StartDate)
 	if err != nil {
+		middleware.LogWithMetadata(ctx, "ERROR", "Invalid start date format", "startDate", req.StartDate, "error", err)
 		return nil, status.Errorf(codes.InvalidArgument, "invalid start date format: %v", err)
 	}
 
@@ -148,9 +176,18 @@ func (s *AnalyticsService) GetWeightProgressAnalysis(ctx context.Context, req *a
 
 // GetCalorieBalanceAnalysis returns calorie balance analysis
 func (s *AnalyticsService) GetCalorieBalanceAnalysis(ctx context.Context, req *analyticspb.GetCalorieBalanceAnalysisRequest) (*analyticspb.GetCalorieBalanceAnalysisResponse, error) {
+	// Validate metadata and user ID
+	if err := middleware.ValidateUserID(ctx, req.UserId); err != nil {
+		return nil, err
+	}
+
+	// Log request with metadata
+	middleware.LogWithMetadata(ctx, "INFO", "GetCalorieBalanceAnalysis request", "startDate", req.StartDate, "endDate", req.EndDate)
+
 	// Parse dates
 	startDate, err := time.Parse("2006-01-02", req.StartDate)
 	if err != nil {
+		middleware.LogWithMetadata(ctx, "ERROR", "Invalid start date format", "startDate", req.StartDate, "error", err)
 		return nil, status.Errorf(codes.InvalidArgument, "invalid start date format: %v", err)
 	}
 
